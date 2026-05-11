@@ -94,8 +94,8 @@ export function scoreSophistication(
   // Transaction frequency: max 20 pts — saturates at 500 txns
   const transactionFrequency = Math.min(20, (totalTransactions / 500) * 20);
 
-  // Multi-chain: max 20 pts — full points at 3+ chains
-  const multiChainActivity = Math.min(20, ((chains.length - 1) / 2) * 20);
+  // Multi-chain: max 20 pts — full points at 3+ chains; 0 for single chain
+  const multiChainActivity = Math.min(20, Math.max(0, ((chains.length - 1) / 2) * 20));
 
   const score = Math.round(
     walletAge + protocolDiversity + transactionFrequency + multiChainActivity

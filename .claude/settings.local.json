@@ -15,7 +15,9 @@
       "Bash(curl -s https://api.github.com/user -H \"Authorization: token $\\(cat ~/.config/gh/hosts.yml)",
       "Bash(gh auth *)",
       "Bash(git push *)",
-      "Bash(rm -rf .git && git init && git add . && git status --short)"
+      "Bash(rm -rf .git && git init && git add . && git status --short)",
+      "Bash(git remote *)",
+      "Bash(grep -E '\\\\.\\(test|spec\\)\\\\.\\(ts|tsx|js\\)$')"
     ]
   }
 }
