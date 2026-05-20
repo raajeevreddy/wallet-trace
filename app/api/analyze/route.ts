@@ -2,17 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { buildWalletProfile, isValidAddress } from "@/lib/orchestrator";
 import { generateNarrative } from "@/lib/ai/narrator";
 import { getCachedAnalysis, setCachedAnalysis } from "@/lib/cache";
-import { isRateLimited, getRemainingRequests } from "@/lib/rateLimit";
+import { isRateLimited, getRemainingRequests, purgeExpired } from "@/lib/rateLimit";
 import type { AnalysisResponse, AnalysisError } from "@/lib/types";
 
 export const maxDuration = 60; // Vercel function timeout
 
+// ─── Max body size: 2 KB (an Ethereum address is 42 chars) ───────────────────
+const MAX_BODY_BYTES = 2048;
+
+// ─── IP extraction ────────────────────────────────────────────────────────────
+/**
+ * Extract the real client IP.
+ *
+ * On Vercel, x-real-ip is injected by the edge and cannot be spoofed.
+ * x-forwarded-for is "client, proxy1, proxy2" — using the LAST entry (set by
+ * the outermost trusted proxy) is safer than the first (which is client-controlled).
+ */
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-real-ip")?.trim() ??
+    req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ??
+    "unknown"
+  );
+}
+
 export async function POST(req: NextRequest) {
   const start = Date.now();
 
+  // ─── Periodic rate-limiter cleanup (prevents unbounded memory growth) ──────
+  if (Math.random() < 0.02) purgeExpired();
+
   // ─── Rate limiting ────────────────────────────────────────────────────────
-  const ip =
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = getClientIp(req);
 
   if (isRateLimited(ip)) {
     return NextResponse.json<AnalysisError>(
@@ -24,8 +45,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ─── Body size guard ──────────────────────────────────────────────────────
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return NextResponse.json<AnalysisError>(
+      { error: "Request body too large", code: "UNKNOWN" },
+      { status: 413 }
+    );
+  }
+
   // ─── Parse body ───────────────────────────────────────────────────────────
-  let body: { address?: string };
+  let body: { address?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -35,7 +65,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const address = body.address?.trim().toLowerCase();
+  // Ensure address is a string before calling string methods
+  if (typeof body.address !== "string") {
+    return NextResponse.json<AnalysisError>(
+      { error: "Address is required", code: "INVALID_ADDRESS" },
+      { status: 400 }
+    );
+  }
+
+  const address = body.address.trim().toLowerCase();
 
   if (!address) {
     return NextResponse.json<AnalysisError>(

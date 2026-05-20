@@ -18,7 +18,12 @@
       "Bash(rm -rf .git && git init && git add . && git status --short)",
       "Bash(git remote *)",
       "Bash(grep -E '\\\\.\\(test|spec\\)\\\\.\\(ts|tsx|js\\)$')",
-      "Bash(gh run *)"
+      "Bash(gh run *)",
+      "Bash(npx vercel *)",
+      "Bash(curl -s -X POST https://wallet-trace.vercel.app/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"0xd8da6bf26964af9d7eed9e03e53415d37aa96045\"}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c ' *)",
+      "Bash(npx jest *)"
     ]
   }
 }

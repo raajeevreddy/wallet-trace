@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import {
+  getRecentWallets,
+  clearRecentWallets,
+  shortAddress,
+  type RecentWallet,
+} from "@/lib/recentWallets";
 
 const EXAMPLE_WALLETS = [
   { label: "Vitalik.eth", address: "vitalik.eth" },
@@ -19,6 +25,12 @@ export default function HomePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Analyzing…");
+  const [recentWallets, setRecentWallets] = useState<RecentWallet[]>([]);
+
+  // Load recent wallets after mount (localStorage is not available during SSR)
+  useEffect(() => {
+    setRecentWallets(getRecentWallets());
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -70,6 +82,11 @@ export default function HomePage() {
   function loadExample(addr: string) {
     setAddress(addr);
     setError("");
+  }
+
+  function handleClearRecent() {
+    clearRecentWallets();
+    setRecentWallets([]);
   }
 
   return (
@@ -207,6 +224,84 @@ export default function HomePage() {
             <p style={{ fontSize: 12, color: "var(--red)", margin: "4px 0 0" }}>{error}</p>
           )}
         </form>
+
+        {/* Recent Searches */}
+        {recentWallets.length > 0 && (
+          <div style={{ marginTop: 20 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: 8,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-3)",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  margin: 0,
+                }}
+              >
+                Recent
+              </p>
+              <button
+                onClick={handleClearRecent}
+                style={{
+                  fontSize: 11,
+                  color: "var(--text-3)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  fontFamily: "var(--font-body)",
+                }}
+              >
+                Clear
+              </button>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {recentWallets.map((w) => (
+                <button
+                  key={w.address}
+                  onClick={() => router.push(`/analysis/${w.address}`)}
+                  title={w.address}
+                  style={{
+                    fontSize: 12,
+                    padding: "5px 12px",
+                    background: "var(--surface-2)",
+                    border: "0.5px solid var(--border)",
+                    borderRadius: 20,
+                    color: "var(--text-2)",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-mono)",
+                    transition: "background 0.1s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "var(--surface-3)")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "var(--surface-2)")
+                  }
+                >
+                  {w.ens ? (
+                    <>
+                      <span style={{ color: "var(--green)", fontSize: 10 }}>◆</span>
+                      {w.ens}
+                    </>
+                  ) : (
+                    shortAddress(w.address)
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Examples */}
         <div style={{ marginTop: 20 }}>
