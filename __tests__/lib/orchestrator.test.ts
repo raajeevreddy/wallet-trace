@@ -19,9 +19,14 @@ jest.mock("../../lib/providers/etherscan", () => ({
   getFirstTransactionTimestamp: jest.fn().mockResolvedValue(null),
 }));
 
+jest.mock("../../lib/providers/coingecko", () => ({
+  enrichTokenPrices: jest.fn().mockImplementation((tokens) => Promise.resolve(tokens)),
+}));
+
 const mockAlchemy = require("../../lib/providers/alchemy");
 const mockDebank = require("../../lib/providers/debank");
 const mockEtherscan = require("../../lib/providers/etherscan");
+const mockCoingecko = require("../../lib/providers/coingecko");
 
 const VALID_ADDRESS = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
 
@@ -81,6 +86,7 @@ describe("buildWalletProfile", () => {
     mockDebank.getProtocolList.mockResolvedValue([]);
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 0, chains: [] });
     mockEtherscan.getFirstTransactionTimestamp.mockResolvedValue(null);
+    mockCoingecko.enrichTokenPrices.mockImplementation((tokens: unknown) => Promise.resolve(tokens));
   });
 
   it("returns a WalletProfile with correct address", async () => {
@@ -113,12 +119,28 @@ describe("buildWalletProfile", () => {
     expect(profile.netWorthUsd).toBe(500_000);
   });
 
-  it("falls back to summing token usdValues when DeBank returns 0", async () => {
-    const tokens = [
+  it("calls enrichTokenPrices with raw token balances", async () => {
+    const rawTokens = [
+      { symbol: "ETH", name: "Ether", balance: 10, usdValue: 0, contractAddress: "0x1", isStablecoin: false },
+    ];
+    const enrichedTokens = [
+      { ...rawTokens[0], usdValue: 30_000 },
+    ];
+    mockAlchemy.getTokenBalances.mockResolvedValue(rawTokens);
+    mockCoingecko.enrichTokenPrices.mockResolvedValue(enrichedTokens);
+
+    const profile = await buildWalletProfile(VALID_ADDRESS);
+    expect(mockCoingecko.enrichTokenPrices).toHaveBeenCalledWith(rawTokens);
+    expect(profile.tokens[0].usdValue).toBe(30_000);
+  });
+
+  it("falls back to summing enriched token usdValues when DeBank returns 0", async () => {
+    const enrichedTokens = [
       { symbol: "ETH", name: "Ether", balance: 10, usdValue: 30_000, contractAddress: "0x1", isStablecoin: false },
       { symbol: "USDC", name: "USD Coin", balance: 5000, usdValue: 5_000, contractAddress: "0x2", isStablecoin: true },
     ];
-    mockAlchemy.getTokenBalances.mockResolvedValue(tokens);
+    mockAlchemy.getTokenBalances.mockResolvedValue([]);
+    mockCoingecko.enrichTokenPrices.mockResolvedValue(enrichedTokens);
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 0, chains: [] });
 
     const profile = await buildWalletProfile(VALID_ADDRESS);

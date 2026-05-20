@@ -1,6 +1,7 @@
 import { getTokenBalances, getTransactionHistory, getWalletAge, resolveENS } from "./providers/alchemy";
 import { getProtocolList, getTotalBalance } from "./providers/debank";
 import { getFirstTransactionTimestamp } from "./providers/etherscan";
+import { enrichTokenPrices } from "./providers/coingecko";
 import {
   classifyTags,
   scoreSophistication,
@@ -52,22 +53,20 @@ export async function buildWalletProfile(address: string): Promise<WalletProfile
   // Collect transactions from all chains
   const allTransactions = chainData.flat();
 
-  // Fetch token balances for Ethereum (primary)
-  const tokens = await getTokenBalances(address, "ethereum").catch(() => [] as TokenBalance[]);
+  // Fetch token balances for Ethereum (primary), then enrich with USD prices
+  const rawTokens = await getTokenBalances(address, "ethereum").catch(() => [] as TokenBalance[]);
+  const tokens = await enrichTokenPrices(rawTokens).catch(() => rawTokens);
 
   // Resolve wallet age (prefer Alchemy, fallback to Etherscan)
   const ageData = alchemyAge ?? etherscanAge;
   const walletAgeYears = ageData?.walletAgeYears ?? 0;
   const firstTxTimestamp = ageData?.firstTxTimestamp;
 
-  // Net worth — use DeBank if available, otherwise estimate from token balances
+  // Net worth — use DeBank if available, otherwise sum enriched token values
   const netWorthUsd =
     debankData.netWorthUsd > 0
       ? debankData.netWorthUsd
       : tokens.reduce((s, t) => s + t.usdValue, 0);
-
-  // Enrich token usdValues from DeBank net worth if individual values are 0
-  // (simplified: proportional distribution — real version would use price API)
 
   // Stablecoin analysis
   const stablecoins = summarizeStablecoins(tokens, netWorthUsd);
