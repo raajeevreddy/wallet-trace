@@ -6,6 +6,8 @@ import type { AnalysisResponse } from "@/lib/types";
 import { saveRecentWallet } from "@/lib/recentWallets";
 import WalletHeader from "@/components/WalletHeader";
 import MetricGrid from "@/components/MetricGrid";
+import TokenHoldings from "@/components/TokenHoldings";
+import TransactionTimeline from "@/components/TransactionTimeline";
 import ProtocolChart from "@/components/ProtocolChart";
 import StablecoinPanel from "@/components/StablecoinPanel";
 import RiskTable from "@/components/RiskTable";
@@ -208,6 +210,12 @@ export default function AnalysisPage() {
                 <ChainBreakdown chains={data.profile.chains} />
               </div>
             </div>
+            {/* Row 4: Token holdings + Transaction timeline */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
+              <TokenHoldings tokens={data.profile.tokens} netWorthUsd={data.profile.netWorthUsd} />
+              <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} />
+            </div>
+
             <RiskTable risk={data.profile.risk} />
             <AIInsightCard narrative={data.narrative} />
           </div>
