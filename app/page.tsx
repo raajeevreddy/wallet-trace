@@ -4,33 +4,66 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
 const EXAMPLE_WALLETS = [
-  { label: "Vitalik.eth", address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045" },
+  { label: "Vitalik.eth", address: "vitalik.eth" },
   { label: "Aave Treasury", address: "0x25F2226B597E8F9514B3F68F00f494cF4f286491" },
   { label: "DeFi Whale", address: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE" },
 ];
+
+function looksLikeENS(input: string): boolean {
+  return input.includes(".") && !input.startsWith("0x");
+}
 
 export default function HomePage() {
   const router = useRouter();
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("Analyzing…");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = address.trim();
 
     if (!trimmed) {
-      setError("Please enter a wallet address");
-      return;
-    }
-
-    if (!/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
-      setError("Enter a valid Ethereum address (0x...)");
+      setError("Please enter a wallet address or ENS name");
       return;
     }
 
     setError("");
     setLoading(true);
+
+    // ── ENS resolution ──────────────────────────────────────────────────────
+    if (looksLikeENS(trimmed)) {
+      setLoadingMsg("Resolving ENS…");
+      try {
+        const res = await fetch(
+          `/api/ens?name=${encodeURIComponent(trimmed.toLowerCase())}`
+        );
+        const json = await res.json();
+
+        if (!res.ok || !json.address) {
+          setError(json.error ?? `Could not resolve "${trimmed}"`);
+          setLoading(false);
+          return;
+        }
+
+        router.push(`/analysis/${json.address}`);
+        return;
+      } catch {
+        setError("Network error resolving ENS name. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // ── Hex address ─────────────────────────────────────────────────────────
+    if (!/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
+      setError("Enter a valid Ethereum address (0x…) or ENS name (e.g. vitalik.eth)");
+      setLoading(false);
+      return;
+    }
+
+    setLoadingMsg("Analyzing…");
     router.push(`/analysis/${trimmed.toLowerCase()}`);
   }
 
@@ -97,7 +130,7 @@ export default function HomePage() {
             margin: "0 auto",
           }}
         >
-          Paste any Ethereum wallet address. Get institutional-grade AI analysis in seconds.
+          Paste any Ethereum wallet address or ENS name. Get institutional-grade AI analysis in seconds.
         </p>
       </div>
 
@@ -125,14 +158,14 @@ export default function HomePage() {
               marginBottom: 8,
             }}
           >
-            Wallet Address
+            Wallet Address or ENS Name
           </label>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+          <div className="home-input-row" style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <input
               type="text"
               value={address}
               onChange={(e) => { setAddress(e.target.value); setError(""); }}
-              placeholder="0x..."
+              placeholder="0x… or vitalik.eth"
               spellCheck={false}
               style={{
                 flex: 1,
@@ -167,7 +200,7 @@ export default function HomePage() {
                 minWidth: 100,
               }}
             >
-              {loading ? "Analyzing…" : "Analyze →"}
+              {loading ? loadingMsg : "Analyze →"}
             </button>
           </div>
           {error && (
@@ -230,12 +263,12 @@ export default function HomePage() {
         }}
       >
         {[
+          "ENS support",
           "Protocol analysis",
           "Risk scoring",
           "Stablecoin exposure",
           "AI narrative",
           "Multi-chain",
-          "Behavioral tags",
         ].map((f) => (
           <span
             key={f}

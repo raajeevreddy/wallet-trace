@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildWalletProfile, isValidAddress } from "@/lib/orchestrator";
 import { generateNarrative } from "@/lib/ai/narrator";
+import { getCachedAnalysis, setCachedAnalysis } from "@/lib/cache";
+import { isRateLimited, getRemainingRequests } from "@/lib/rateLimit";
 import type { AnalysisResponse, AnalysisError } from "@/lib/types";
 
 export const maxDuration = 60; // Vercel function timeout
@@ -8,6 +10,21 @@ export const maxDuration = 60; // Vercel function timeout
 export async function POST(req: NextRequest) {
   const start = Date.now();
 
+  // ─── Rate limiting ────────────────────────────────────────────────────────
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json<AnalysisError>(
+      { error: "Too many requests. Please wait a minute and try again.", code: "RATE_LIMIT" },
+      {
+        status: 429,
+        headers: { "Retry-After": "60" },
+      }
+    );
+  }
+
+  // ─── Parse body ───────────────────────────────────────────────────────────
   let body: { address?: string };
   try {
     body = await req.json();
@@ -37,11 +54,24 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  try {
-    // Build wallet profile from all data providers
-    const profile = await buildWalletProfile(address);
+  // ─── Cache check ──────────────────────────────────────────────────────────
+  const cached = getCachedAnalysis(address);
+  if (cached) {
+    return NextResponse.json(
+      { ...cached, cached: true, analysisMs: Date.now() - start },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+          "X-Cache": "HIT",
+          "X-Remaining-Requests": String(getRemainingRequests(ip)),
+        },
+      }
+    );
+  }
 
-    // Generate AI narrative
+  // ─── Full analysis ────────────────────────────────────────────────────────
+  try {
+    const profile = await buildWalletProfile(address);
     const narrative = await generateNarrative(profile);
 
     const response: AnalysisResponse = {
@@ -51,10 +81,13 @@ export async function POST(req: NextRequest) {
       analysisMs: Date.now() - start,
     };
 
+    setCachedAnalysis(address, response);
+
     return NextResponse.json(response, {
       headers: {
-        // Cache at the CDN level for 1 hour
         "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=7200",
+        "X-Cache": "MISS",
+        "X-Remaining-Requests": String(getRemainingRequests(ip)),
       },
     });
   } catch (err) {

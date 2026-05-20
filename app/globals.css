@@ -79,3 +79,54 @@ body { margin: 0; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+
+/* 2-column dashboard grid → single column on mobile */
+@media (max-width: 768px) {
+  .grid-stack {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tighten dashboard padding on small screens */
+@media (max-width: 640px) {
+  .dashboard-nav {
+    padding: 0 12px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard-content {
+    padding: 16px 12px 48px;
+  }
+
+  /* Wallet header: stack identity + score vertically */
+  .wallet-header-inner {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Score block: left-align on mobile */
+  .wallet-header-score {
+    text-align: left !important;
+  }
+
+  /* Score mini-bars: full width */
+  .wallet-header-score > div:last-child {
+    width: 100% !important;
+  }
+
+  /* Metric grid: 2 columns instead of 4 */
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Homepage input row: stack button below input */
+  .home-input-row {
+    flex-direction: column !important;
+  }
+
+  .home-input-row button {
+    width: 100% !important;
+  }
+}

@@ -142,12 +142,23 @@ export async function getWalletAge(
 
 // ─── ENS ─────────────────────────────────────────────────────────────────────
 
+/** Reverse lookup: address → ENS name (e.g. "vitalik.eth") */
 export async function resolveENS(address: string): Promise<string | undefined> {
   try {
     const name = await clients["ethereum"].core.lookupAddress(address);
     return name ?? undefined;
   } catch {
     return undefined;
+  }
+}
+
+/** Forward lookup: ENS name → address (e.g. "vitalik.eth" → "0xd8da...") */
+export async function resolveENSName(name: string): Promise<string | null> {
+  try {
+    const address = await clients["ethereum"].core.resolveName(name);
+    return address ?? null;
+  } catch {
+    return null;
   }
 }
 
