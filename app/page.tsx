@@ -26,8 +26,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("Analyzing…");
   const [recentWallets, setRecentWallets] = useState<RecentWallet[]>([]);
+  const [inputFocused, setInputFocused] = useState(false);
 
-  // Load recent wallets after mount (localStorage is not available during SSR)
   useEffect(() => {
     setRecentWallets(getRecentWallets());
   }, []);
@@ -35,30 +35,17 @@ export default function HomePage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const trimmed = address.trim();
-
-    if (!trimmed) {
-      setError("Please enter a wallet address or ENS name");
-      return;
-    }
+    if (!trimmed) { setError("Please enter a wallet address or ENS name"); return; }
 
     setError("");
     setLoading(true);
 
-    // ── ENS resolution ──────────────────────────────────────────────────────
     if (looksLikeENS(trimmed)) {
       setLoadingMsg("Resolving ENS…");
       try {
-        const res = await fetch(
-          `/api/ens?name=${encodeURIComponent(trimmed.toLowerCase())}`
-        );
+        const res = await fetch(`/api/ens?name=${encodeURIComponent(trimmed.toLowerCase())}`);
         const json = await res.json();
-
-        if (!res.ok || !json.address) {
-          setError(json.error ?? `Could not resolve "${trimmed}"`);
-          setLoading(false);
-          return;
-        }
-
+        if (!res.ok || !json.address) { setError(json.error ?? `Could not resolve "${trimmed}"`); setLoading(false); return; }
         router.push(`/analysis/${json.address}`);
         return;
       } catch {
@@ -68,9 +55,8 @@ export default function HomePage() {
       }
     }
 
-    // ── Hex address ─────────────────────────────────────────────────────────
     if (!/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
-      setError("Enter a valid Ethereum address (0x…) or ENS name (e.g. vitalik.eth)");
+      setError("Enter a valid Ethereum address (0x…) or ENS name");
       setLoading(false);
       return;
     }
@@ -79,15 +65,8 @@ export default function HomePage() {
     router.push(`/analysis/${trimmed.toLowerCase()}`);
   }
 
-  function loadExample(addr: string) {
-    setAddress(addr);
-    setError("");
-  }
-
-  function handleClearRecent() {
-    clearRecentWallets();
-    setRecentWallets([]);
-  }
+  function loadExample(addr: string) { setAddress(addr); setError(""); }
+  function handleClearRecent() { clearRecentWallets(); setRecentWallets([]); }
 
   return (
     <main
@@ -97,167 +76,159 @@ export default function HomePage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "40px 24px",
-        background: "var(--surface-3)",
+        padding: "40px 24px 80px",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      {/* Logo / wordmark */}
-      <div style={{ marginBottom: 48, textAlign: "center" }}>
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 16,
-          }}
-        >
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: "50%",
-              background: "var(--green)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 2L14 7H10V16H8V7H4L9 2Z" fill="white" />
+      {/* ── Decorative deep-sea glow orbs ──────────────────────────────────── */}
+      <div style={{
+        position: "absolute", top: "-15%", left: "50%", transform: "translateX(-50%)",
+        width: 700, height: 400,
+        background: "radial-gradient(ellipse, rgba(6,194,217,0.10) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", bottom: "-10%", right: "-10%",
+        width: 400, height: 400,
+        background: "radial-gradient(ellipse, rgba(8,151,176,0.07) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 40, textAlign: "center", position: "relative" }}>
+        {/* Logo mark */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: "50%",
+            background: "linear-gradient(135deg, #06C2D9 0%, #0897B0 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 24px rgba(6,194,217,0.35), 0 0 48px rgba(6,194,217,0.12)",
+          }}>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M10 2.5L15 8.5H11.5V17.5H8.5V8.5H5L10 2.5Z" fill="white" />
             </svg>
           </div>
-          <span
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: 22,
-              fontWeight: 700,
-              color: "var(--text)",
-              letterSpacing: "-0.02em",
-            }}
-          >
+          <span style={{
+            fontFamily: "var(--font-display)",
+            fontSize: 26, fontWeight: 800,
+            color: "var(--text)",
+            letterSpacing: "-0.03em",
+          }}>
             Wallet Trace
           </span>
         </div>
-        <p
-          style={{
-            fontSize: 16,
-            color: "var(--text-2)",
-            maxWidth: 420,
-            lineHeight: 1.6,
-            margin: "0 auto",
-          }}
-        >
-          Paste any Ethereum wallet address or ENS name. Get institutional-grade AI analysis in seconds.
+
+        {/* Tagline */}
+        <p style={{
+          fontSize: 17, color: "var(--text-2)",
+          maxWidth: 440, lineHeight: 1.65, margin: "0 auto",
+          fontWeight: 300,
+        }}>
+          Paste any Ethereum wallet address or ENS name.<br />
+          <span style={{ color: "var(--green)", fontWeight: 400 }}>Institutional-grade AI analysis</span> in seconds.
         </p>
+
+        {/* Feature pills */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 8,
+          marginTop: 20, justifyContent: "center",
+        }}>
+          {["ENS support", "Protocol analysis", "Risk scoring", "AI narrative", "Multi-chain"].map((f) => (
+            <span key={f} style={{
+              fontSize: 11, padding: "3px 11px",
+              background: "rgba(6,194,217,0.08)",
+              border: "0.5px solid rgba(6,194,217,0.18)",
+              borderRadius: 20, color: "var(--text-3)",
+              letterSpacing: "0.02em",
+            }}>{f}</span>
+          ))}
+        </div>
       </div>
 
-      {/* Input card */}
-      <div
-        style={{
-          background: "var(--surface)",
-          border: "0.5px solid var(--border-strong)",
-          borderRadius: 16,
-          padding: "32px 32px 28px",
-          width: "100%",
-          maxWidth: 560,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-        }}
-      >
+      {/* ── Input card ────────────────────────────────────────────────────────── */}
+      <div style={{
+        width: "100%", maxWidth: 580,
+        background: "linear-gradient(135deg, rgba(12,31,52,0.97) 0%, rgba(7,22,39,0.95) 100%)",
+        border: `0.5px solid ${inputFocused ? "rgba(6,194,217,0.40)" : "rgba(6,194,217,0.18)"}`,
+        borderRadius: 20,
+        padding: "32px 32px 28px",
+        boxShadow: inputFocused
+          ? "0 0 0 3px rgba(6,194,217,0.08), 0 20px 60px rgba(0,0,0,0.5)"
+          : "0 20px 60px rgba(0,0,0,0.4)",
+        transition: "border-color 0.25s, box-shadow 0.25s",
+      }}>
         <form onSubmit={handleSubmit}>
-          <label
-            style={{
-              display: "block",
-              fontSize: 12,
-              fontWeight: 500,
-              color: "var(--text-3)",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: 8,
-            }}
-          >
+          <label style={{
+            display: "block", fontSize: 11, fontWeight: 500,
+            color: "var(--text-3)", textTransform: "uppercase",
+            letterSpacing: "0.10em", marginBottom: 10,
+          }}>
             Wallet Address or ENS Name
           </label>
+
           <div className="home-input-row" style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <input
               type="text"
               value={address}
               onChange={(e) => { setAddress(e.target.value); setError(""); }}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               placeholder="0x… or vitalik.eth"
               spellCheck={false}
               style={{
                 flex: 1,
                 fontFamily: "var(--font-mono)",
                 fontSize: 13,
-                padding: "10px 14px",
-                border: `0.5px solid ${error ? "var(--red)" : "var(--border-strong)"}`,
-                borderRadius: 8,
-                background: "var(--surface-2)",
+                padding: "11px 16px",
+                border: `0.5px solid ${error ? "var(--red)" : "rgba(6,194,217,0.22)"}`,
+                borderRadius: 10,
+                background: "rgba(3,15,28,0.6)",
                 color: "var(--text)",
                 outline: "none",
-                transition: "border-color 0.15s",
+                transition: "border-color 0.2s",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "var(--green)")}
-              onBlur={(e) => (e.target.style.borderColor = error ? "var(--red)" : "var(--border-strong)")}
             />
             <button
               type="submit"
               disabled={loading}
               style={{
-                padding: "10px 20px",
-                background: loading ? "var(--surface-3)" : "var(--green)",
+                padding: "11px 22px",
+                background: loading
+                  ? "rgba(6,194,217,0.10)"
+                  : "linear-gradient(135deg, #06C2D9 0%, #0897B0 100%)",
                 color: loading ? "var(--text-3)" : "white",
                 border: "none",
-                borderRadius: 8,
-                fontSize: 14,
-                fontWeight: 500,
+                borderRadius: 10,
+                fontSize: 14, fontWeight: 600,
                 cursor: loading ? "not-allowed" : "pointer",
                 whiteSpace: "nowrap",
                 fontFamily: "var(--font-body)",
-                transition: "background 0.15s",
-                minWidth: 100,
+                transition: "all 0.2s",
+                minWidth: 108,
+                boxShadow: loading ? "none" : "0 0 20px rgba(6,194,217,0.30)",
+                letterSpacing: "0.01em",
               }}
             >
               {loading ? loadingMsg : "Analyze →"}
             </button>
           </div>
+
           {error && (
             <p style={{ fontSize: 12, color: "var(--red)", margin: "4px 0 0" }}>{error}</p>
           )}
         </form>
 
-        {/* Recent Searches */}
+        {/* ── Recent Searches ──────────────────────────────────────────────── */}
         {recentWallets.length > 0 && (
-          <div style={{ marginTop: 20 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 8,
-              }}
-            >
-              <p
-                style={{
-                  fontSize: 11,
-                  color: "var(--text-3)",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                  margin: 0,
-                }}
-              >
+          <div style={{ marginTop: 22, paddingTop: 18, borderTop: "0.5px solid var(--border)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <span style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
                 Recent
-              </p>
+              </span>
               <button
                 onClick={handleClearRecent}
-                style={{
-                  fontSize: 11,
-                  color: "var(--text-3)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  fontFamily: "var(--font-body)",
-                }}
+                style={{ fontSize: 11, color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}
               >
                 Clear
               </button>
@@ -269,51 +240,29 @@ export default function HomePage() {
                   onClick={() => router.push(`/analysis/${w.address}`)}
                   title={w.address}
                   style={{
-                    fontSize: 12,
-                    padding: "5px 12px",
-                    background: "var(--surface-2)",
-                    border: "0.5px solid var(--border)",
-                    borderRadius: 20,
-                    color: "var(--text-2)",
-                    cursor: "pointer",
-                    fontFamily: "var(--font-mono)",
-                    transition: "background 0.1s",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
+                    fontSize: 12, padding: "5px 12px",
+                    background: "rgba(6,194,217,0.07)",
+                    border: "0.5px solid rgba(6,194,217,0.18)",
+                    borderRadius: 20, color: "var(--text-2)",
+                    cursor: "pointer", fontFamily: "var(--font-mono)",
+                    transition: "all 0.15s",
+                    display: "flex", alignItems: "center", gap: 5,
                   }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "var(--surface-3)")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "var(--surface-2)")
-                  }
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.14)"; e.currentTarget.style.color = "var(--green)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.07)"; e.currentTarget.style.color = "var(--text-2)"; }}
                 >
                   {w.ens ? (
-                    <>
-                      <span style={{ color: "var(--green)", fontSize: 10 }}>◆</span>
-                      {w.ens}
-                    </>
-                  ) : (
-                    shortAddress(w.address)
-                  )}
+                    <><span style={{ color: "var(--green)", fontSize: 9 }}>◆</span>{w.ens}</>
+                  ) : shortAddress(w.address)}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Examples */}
+        {/* ── Examples ─────────────────────────────────────────────────────── */}
         <div style={{ marginTop: 20 }}>
-          <p
-            style={{
-              fontSize: 11,
-              color: "var(--text-3)",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: 8,
-            }}
-          >
+          <p style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 10 }}>
             Try an example
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
@@ -322,22 +271,15 @@ export default function HomePage() {
                 key={w.address}
                 onClick={() => loadExample(w.address)}
                 style={{
-                  fontSize: 12,
-                  padding: "5px 12px",
-                  background: "var(--surface-2)",
-                  border: "0.5px solid var(--border)",
-                  borderRadius: 20,
-                  color: "var(--text-2)",
-                  cursor: "pointer",
-                  fontFamily: "var(--font-body)",
-                  transition: "background 0.1s",
+                  fontSize: 12, padding: "5px 13px",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "0.5px solid rgba(255,255,255,0.09)",
+                  borderRadius: 20, color: "var(--text-2)",
+                  cursor: "pointer", fontFamily: "var(--font-body)",
+                  transition: "all 0.15s",
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "var(--surface-3)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "var(--surface-2)")
-                }
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.10)"; e.currentTarget.style.borderColor = "rgba(6,194,217,0.25)"; e.currentTarget.style.color = "var(--text)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; e.currentTarget.style.color = "var(--text-2)"; }}
               >
                 {w.label}
               </button>
@@ -346,40 +288,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Feature pills */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 10,
-          marginTop: 32,
-          justifyContent: "center",
-          maxWidth: 560,
-        }}
-      >
-        {[
-          "ENS support",
-          "Protocol analysis",
-          "Risk scoring",
-          "Stablecoin exposure",
-          "AI narrative",
-          "Multi-chain",
-        ].map((f) => (
-          <span
-            key={f}
-            style={{
-              fontSize: 12,
-              padding: "4px 12px",
-              background: "var(--surface)",
-              border: "0.5px solid var(--border)",
-              borderRadius: 20,
-              color: "var(--text-3)",
-            }}
-          >
-            {f}
-          </span>
-        ))}
-      </div>
+      {/* ── Footer caption ────────────────────────────────────────────────────── */}
+      <p style={{ marginTop: 28, fontSize: 12, color: "var(--text-3)", textAlign: "center" }}>
+        Powered by Alchemy · Claude AI · CoinGecko
+      </p>
     </main>
   );
 }

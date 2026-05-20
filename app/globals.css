@@ -1,50 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Ocean Design System ──────────────────────────────────────────────────── */
+
 :root {
   --font-display: 'Syne', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
 
-  --green: #1D9E75;
-  --green-dim: #0F6E56;
-  --green-bg: #E1F5EE;
-  --blue: #185FA5;
-  --blue-bg: #E6F1FB;
-  --amber: #BA7517;
-  --amber-bg: #FAEEDA;
-  --red: #A32D2D;
-  --red-bg: #FCEBEB;
+  /* ── Accent palette ─────────────────────────────────────────────────────── */
+  /* Primary: bioluminescent ocean teal */
+  --green:     #06C2D9;
+  --green-dim: #0897B0;
+  --green-bg:  rgba(6, 194, 217, 0.12);
 
-  --surface: #ffffff;
-  --surface-2: #F8F7F4;
-  --surface-3: #F1EFE8;
-  --border: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.14);
-  --text: #1a1a18;
-  --text-2: #5a5a56;
-  --text-3: #8a8a84;
+  /* Secondary: deep-water indigo */
+  --blue:    #7B8CDE;
+  --blue-bg: rgba(123, 140, 222, 0.12);
+
+  /* Warning: warm amber (sunlight through shallow water) */
+  --amber:    #F4A629;
+  --amber-bg: rgba(244, 166, 41, 0.12);
+
+  /* Danger: coral red */
+  --red:    #F07070;
+  --red-bg: rgba(240, 112, 112, 0.12);
+
+  /* ── Ocean depth surfaces (always dark) ─────────────────────────────────── */
+  --surface:         #0C1F34;   /* Card — deep blue */
+  --surface-2:       #071627;   /* Inset — abyssal blue */
+  --surface-3:       #030F1C;   /* Page bg — midnight ocean */
+
+  /* ── Borders: subtle teal glow ──────────────────────────────────────────── */
+  --border:          rgba(6, 194, 217, 0.10);
+  --border-strong:   rgba(6, 194, 217, 0.20);
+
+  /* ── Text: cool ocean tones ─────────────────────────────────────────────── */
+  --text:   #D9F0F7;   /* Light seafoam white */
+  --text-2: #6EB5CE;   /* Muted ocean blue */
+  --text-3: #3C7A94;   /* Deep muted teal */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #0f0f0e;
-    --surface-2: #1a1a18;
-    --surface-3: #242420;
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.14);
-    --text: #f0ede8;
-    --text-2: #a0a09a;
-    --text-3: #686864;
-    --green-bg: rgba(29,158,117,0.12);
-    --blue-bg: rgba(24,95,165,0.12);
-    --amber-bg: rgba(186,117,23,0.12);
-    --red-bg: rgba(163,45,45,0.12);
-  }
-}
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 
 * { box-sizing: border-box; }
 
@@ -57,30 +57,68 @@ html {
 
 body { margin: 0; }
 
-/* Skeleton shimmer */
-@keyframes shimmer {
-  0% { background-position: -680px 0; }
-  100% { background-position: 680px 0; }
+/* ─── Ocean page background ───────────────────────────────────────────────── */
+/* Deep ocean with bioluminescent glow from below */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -10%, rgba(6, 194, 217, 0.13) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 10% 110%, rgba(8, 151, 176, 0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 90%, rgba(6, 100, 140, 0.07) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
 }
+
+body > * { position: relative; z-index: 1; }
+
+/* ─── Card glass effect ────────────────────────────────────────────────────── */
+
+.card-glass {
+  background: linear-gradient(135deg,
+    rgba(12, 31, 52, 0.95) 0%,
+    rgba(7, 22, 39, 0.90) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─── Glow animations ─────────────────────────────────────────────────────── */
+
+@keyframes ocean-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -680px 0; }
+  100% { background-position:  680px 0; }
+}
+
+/* ─── Skeleton (dark ocean shimmer) ──────────────────────────────────────── */
 
 .skeleton {
   background: linear-gradient(
     90deg,
     var(--surface-3) 25%,
-    var(--surface-2) 50%,
+    rgba(6, 194, 217, 0.06) 50%,
     var(--surface-3) 75%
   );
   background-size: 1360px 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
+  animation: shimmer 1.8s ease-in-out infinite;
   border-radius: 6px;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
 
-/* ─── Responsive ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: transparent; }
+::-webkit-scrollbar-thumb   { background: rgba(6, 194, 217, 0.25); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(6, 194, 217, 0.45); }
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
 
 /* 2-column dashboard grid → single column on mobile */
 @media (max-width: 768px) {
@@ -89,7 +127,6 @@ body { margin: 0; }
   }
 }
 
-/* Tighten dashboard padding on small screens */
 @media (max-width: 640px) {
   .dashboard-nav {
     padding: 0 12px;
@@ -100,28 +137,23 @@ body { margin: 0; }
     padding: 16px 12px 48px;
   }
 
-  /* Wallet header: stack identity + score vertically */
   .wallet-header-inner {
     flex-direction: column !important;
     gap: 16px !important;
   }
 
-  /* Score block: left-align on mobile */
   .wallet-header-score {
     text-align: left !important;
   }
 
-  /* Score mini-bars: full width */
   .wallet-header-score > div:last-child {
     width: 100% !important;
   }
 
-  /* Metric grid: 2 columns instead of 4 */
   .metric-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  /* Homepage input row: stack button below input */
   .home-input-row {
     flex-direction: column !important;
   }
