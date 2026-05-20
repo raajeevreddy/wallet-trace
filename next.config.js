@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["alchemy-sdk"],
-  },
+  serverExternalPackages: ["alchemy-sdk"],
 };
 
 module.exports = nextConfig;
