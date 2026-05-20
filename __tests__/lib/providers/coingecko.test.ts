@@ -1,4 +1,4 @@
-import { fetchTokenPrices, enrichTokenPrices } from "../../../lib/providers/coingecko";
+import { fetchTokenPrices, enrichTokenPrices, fetchNativeTokenPrice } from "../../../lib/providers/coingecko";
 import type { TokenBalance } from "../../../lib/types";
 
 const mockFetch = jest.fn();
@@ -117,6 +117,81 @@ describe("fetchTokenPrices", () => {
     mockOkResponse({});
     await fetchTokenPrices([ADDR_USDC], "base");
     expect(mockFetch.mock.calls[0][0]).toContain("/base?");
+  });
+});
+
+// ─── fetchNativeTokenPrice ────────────────────────────────────────────────────
+
+describe("fetchNativeTokenPrice", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    delete process.env.COINGECKO_API_KEY;
+  });
+
+  it("returns the ETH USD price from CoinGecko", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ethereum: { usd: 3500 } }),
+    });
+    const price = await fetchNativeTokenPrice("ethereum");
+    expect(price).toBe(3500);
+  });
+
+  it("calls the correct CoinGecko simple/price endpoint", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ethereum: { usd: 3500 } }),
+    });
+    await fetchNativeTokenPrice("ethereum");
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/simple/price?ids=ethereum&vs_currencies=usd"),
+      expect.any(Object)
+    );
+  });
+
+  it("uses the pro API URL when COINGECKO_API_KEY is set", async () => {
+    process.env.COINGECKO_API_KEY = "pro-key";
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ethereum: { usd: 3500 } }),
+    });
+    await fetchNativeTokenPrice("ethereum");
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("pro-api.coingecko.com"),
+      expect.objectContaining({
+        headers: expect.objectContaining({ "x-cg-pro-api-key": "pro-key" }),
+      })
+    );
+  });
+
+  it("returns 0 when API responds with non-ok status", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 429 });
+    const price = await fetchNativeTokenPrice("ethereum");
+    expect(price).toBe(0);
+  });
+
+  it("returns 0 when fetch throws", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    const price = await fetchNativeTokenPrice("ethereum");
+    expect(price).toBe(0);
+  });
+
+  it("returns 0 when response has no usd field", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ethereum: {} }),
+    });
+    const price = await fetchNativeTokenPrice("ethereum");
+    expect(price).toBe(0);
+  });
+
+  it("defaults to 'ethereum' coin id when no argument is passed", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ ethereum: { usd: 3500 } }),
+    });
+    const price = await fetchNativeTokenPrice();
+    expect(price).toBe(3500);
   });
 });
 

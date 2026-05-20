@@ -162,6 +162,21 @@ export async function resolveENSName(name: string): Promise<string | null> {
   }
 }
 
+// ─── Native Balance ───────────────────────────────────────────────────────────
+
+/** Returns the native token balance (ETH, etc.) in human-readable units. */
+export async function getNativeBalance(
+  address: string,
+  chain: SupportedChain = "ethereum"
+): Promise<number> {
+  try {
+    const balanceWei = await clients[chain].core.getBalance(address);
+    return Number(balanceWei) / 1e18;
+  } catch {
+    return 0;
+  }
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function categorizeTx(t: { asset?: string | null; to?: string | null }): Transaction["category"] {

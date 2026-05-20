@@ -62,6 +62,44 @@ export async function fetchTokenPrices(
   }
 }
 
+// ─── Native Token Price ───────────────────────────────────────────────────────
+
+/**
+ * Fetch the USD price of a native coin (e.g. "ethereum", "bitcoin").
+ * Uses CoinGecko's /simple/price endpoint by coin ID (not contract address).
+ */
+export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number> {
+  const apiKey = process.env.COINGECKO_API_KEY;
+  const baseUrl = apiKey ? "https://pro-api.coingecko.com/api/v3" : BASE_URL;
+  const headers: Record<string, string> = { accept: "application/json" };
+  if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd`,
+      { headers, signal: controller.signal }
+    );
+    if (!res.ok) {
+      console.warn(`[coingecko] Native price API responded ${res.status}`);
+      return 0;
+    }
+    const data = (await res.json()) as Record<string, { usd?: number }>;
+    return data[coinId]?.usd ?? 0;
+  } catch (err) {
+    if ((err as Error).name === "AbortError") {
+      console.warn("[coingecko] Native price fetch timed out");
+    } else {
+      console.error("[coingecko] fetchNativeTokenPrice error:", err);
+    }
+    return 0;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ─── Token Enrichment ─────────────────────────────────────────────────────────
 
 /**

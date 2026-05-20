@@ -1,7 +1,7 @@
-import { getTokenBalances, getTransactionHistory, getWalletAge, resolveENS } from "./providers/alchemy";
+import { getTokenBalances, getTransactionHistory, getWalletAge, resolveENS, getNativeBalance } from "./providers/alchemy";
 import { getProtocolList, getTotalBalance } from "./providers/debank";
 import { getFirstTransactionTimestamp } from "./providers/etherscan";
-import { enrichTokenPrices } from "./providers/coingecko";
+import { enrichTokenPrices, fetchNativeTokenPrice } from "./providers/coingecko";
 import {
   classifyTags,
   scoreSophistication,
@@ -53,9 +53,30 @@ export async function buildWalletProfile(address: string): Promise<WalletProfile
   // Collect transactions from all chains
   const allTransactions = chainData.flat();
 
-  // Fetch token balances for Ethereum (primary), then enrich with USD prices
-  const rawTokens = await getTokenBalances(address, "ethereum").catch(() => [] as TokenBalance[]);
-  const tokens = await enrichTokenPrices(rawTokens).catch(() => rawTokens);
+  // Fetch native ETH balance + price and ERC-20 token balances in parallel
+  const [nativeBalance, ethPrice, rawTokens] = await Promise.all([
+    getNativeBalance(address, "ethereum").catch(() => 0),
+    fetchNativeTokenPrice("ethereum").catch(() => 0),
+    getTokenBalances(address, "ethereum").catch(() => [] as TokenBalance[]),
+  ]);
+
+  // Prepend native ETH as a token entry if the wallet holds any
+  const nativeToken: TokenBalance | null =
+    nativeBalance >= 0.0001
+      ? {
+          symbol: "ETH",
+          name: "Ether",
+          balance: nativeBalance,
+          usdValue: nativeBalance * ethPrice,
+          contractAddress: "native",
+          isStablecoin: false,
+        }
+      : null;
+
+  const enrichedErc20 = await enrichTokenPrices(rawTokens).catch(() => rawTokens);
+  const tokens: TokenBalance[] = nativeToken
+    ? [nativeToken, ...enrichedErc20]
+    : enrichedErc20;
 
   // Resolve wallet age (prefer Alchemy, fallback to Etherscan)
   const ageData = alchemyAge ?? etherscanAge;
