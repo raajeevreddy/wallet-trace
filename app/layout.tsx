@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Explain My Wallet",
+  title: "Wallet Trace",
   description: "Institutional-grade AI analysis for any crypto wallet",
   openGraph: {
-    title: "Explain My Wallet",
+    title: "Wallet Trace",
     description: "Turn blockchain data into plain English intelligence",
   },
 };

@@ -98,7 +98,7 @@ export default function AnalysisPage() {
             letterSpacing: "-0.01em",
           }}
         >
-          Explain My Wallet
+          Wallet Trace
         </div>
         {data && (
           <span style={{ fontSize: 12, color: "var(--text-3)" }}>

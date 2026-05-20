@@ -85,7 +85,7 @@ export default function HomePage() {
               letterSpacing: "-0.02em",
             }}
           >
-            Explain My Wallet
+            Wallet Trace
           </span>
         </div>
         <p
