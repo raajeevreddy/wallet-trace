@@ -20,19 +20,27 @@ function MetricCard({ label, value, sub }: { label: string; value: string; sub?:
   return (
     <div
       style={{
-        background: "var(--surface-2)",
-        borderRadius: 10,
-        padding: "16px 20px",
+        background: "var(--surface)",
+        border: "0.5px solid var(--border-strong)",
+        borderRadius: 12,
+        padding: "20px 22px",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Subtle top accent line */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, right: 0, height: 2,
+        background: "linear-gradient(90deg, rgba(6,194,217,0.5) 0%, transparent 100%)",
+      }} />
       <div
         style={{
-          fontSize: 11,
-          fontWeight: 500,
+          fontSize: 10,
+          fontWeight: 600,
           color: "var(--text-3)",
           textTransform: "uppercase",
-          letterSpacing: "0.07em",
-          marginBottom: 6,
+          letterSpacing: "0.10em",
+          marginBottom: 8,
         }}
       >
         {label}
@@ -40,17 +48,17 @@ function MetricCard({ label, value, sub }: { label: string; value: string; sub?:
       <div
         style={{
           fontFamily: "var(--font-display)",
-          fontSize: 26,
+          fontSize: 32,
           fontWeight: 700,
           color: "var(--text)",
           lineHeight: 1,
-          letterSpacing: "-0.02em",
+          letterSpacing: "-0.03em",
         }}
       >
         {value}
       </div>
       {sub && (
-        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>{sub}</div>
+        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 6 }}>{sub}</div>
       )}
     </div>
   );

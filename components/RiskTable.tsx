@@ -12,20 +12,27 @@ const RISK_STYLE: Record<RiskLevel, { color: string; bg: string; label: string }
 
 function RiskBadge({ level }: { level: RiskLevel }) {
   const s = RISK_STYLE[level];
+  const barWidth = level === "high" ? "80%" : level === "medium" ? "45%" : "18%";
   return (
-    <span
-      style={{
-        fontSize: 11,
-        fontWeight: 500,
-        padding: "3px 10px",
-        borderRadius: 20,
-        background: s.bg,
-        color: s.color,
-        whiteSpace: "nowrap",
-      }}
-    >
-      {s.label}
-    </span>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          padding: "2px 9px",
+          borderRadius: 20,
+          background: s.bg,
+          color: s.color,
+          whiteSpace: "nowrap",
+          letterSpacing: "0.03em",
+        }}
+      >
+        {s.label}
+      </span>
+      <div style={{ width: 64, height: 3, background: "var(--surface-3)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: barWidth, background: s.color, borderRadius: 2, opacity: 0.7 }} />
+      </div>
+    </div>
   );
 }
 
@@ -84,16 +91,19 @@ export default function RiskTable({ risk }: Props) {
           marginBottom: 16,
         }}
       >
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: "var(--text-3)",
-            textTransform: "uppercase",
-            letterSpacing: "0.07em",
-          }}
-        >
-          Risk Profile
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--red)", opacity: 0.7 }} />
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: "var(--text-3)",
+              textTransform: "uppercase",
+              letterSpacing: "0.10em",
+            }}
+          >
+            Risk Profile
+          </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 12, color: "var(--text-3)" }}>

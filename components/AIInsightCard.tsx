@@ -36,9 +36,10 @@ export default function AIInsightCard({ narrative }: Props) {
     <div
       style={{
         background: "var(--surface)",
-        border: "0.5px solid var(--border-strong)",
+        border: "0.5px solid rgba(6,194,217,0.30)",
         borderRadius: 14,
         padding: "24px 28px",
+        boxShadow: "0 0 0 1px rgba(6,194,217,0.06), 0 4px 24px rgba(6,194,217,0.08)",
       }}
     >
       {/* Header */}
@@ -72,10 +73,10 @@ export default function AIInsightCard({ narrative }: Props) {
         <div
           style={{
             fontSize: 11,
-            fontWeight: 500,
-            color: "var(--text-3)",
+            fontWeight: 600,
+            color: "var(--green)",
             textTransform: "uppercase",
-            letterSpacing: "0.07em",
+            letterSpacing: "0.10em",
           }}
         >
           AI Analysis
