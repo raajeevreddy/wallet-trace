@@ -18,6 +18,52 @@ import DeFiPositions from "@/components/DeFiPositions";
 import NetWorthChart from "@/components/NetWorthChart";
 import DashboardSkeleton from "@/components/DashboardSkeleton";
 
+// ─── Nav Search ───────────────────────────────────────────────────────────────
+
+function NavSearch() {
+  const router = useRouter();
+  const [value, setValue] = useState("");
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const q = value.trim();
+    if (!q) return;
+    router.push(`/analysis/${encodeURIComponent(q)}`);
+    setValue("");
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 420, margin: "0 16px" }}>
+      <div style={{ position: "relative" }}>
+        <svg
+          width="13" height="13" viewBox="0 0 16 16" fill="none"
+          style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none", opacity: 0.4 }}
+        >
+          <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Search address or ENS…"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            background: "rgba(255,255,255,0.04)",
+            border: "0.5px solid rgba(255,255,255,0.10)",
+            borderRadius: 8, padding: "7px 12px 7px 30px",
+            fontSize: 12, color: "var(--text)",
+            fontFamily: "var(--font-mono)",
+            outline: "none", transition: "border-color 0.15s",
+          }}
+          onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(6,194,217,0.4)")}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)")}
+        />
+      </div>
+    </form>
+  );
+}
+
 // ─── Share Button ─────────────────────────────────────────────────────────────
 
 function ShareButton({ address }: { address: string }) {
@@ -125,28 +171,17 @@ export default function AnalysisPage() {
       <nav className="dashboard-nav" style={{
         maxWidth: 1080, margin: "0 auto 28px",
         display: "flex", alignItems: "center",
-        justifyContent: "space-between", gap: 12,
+        gap: 12,
       }}>
+        {/* Wordmark — click to go home */}
         <button
           onClick={() => router.push("/")}
           style={{
-            display: "flex", alignItems: "center", gap: 6,
-            fontSize: 13, color: "var(--text-3)",
-            background: "none", border: "none",
-            cursor: "pointer", padding: 0,
-            fontFamily: "var(--font-body)",
-            transition: "color 0.15s",
+            display: "flex", alignItems: "center", gap: 8,
+            background: "none", border: "none", cursor: "pointer", padding: 0,
+            flexShrink: 0,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--green)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-3)")}
         >
-          ← New analysis
-        </button>
-
-        {/* Wordmark */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 8,
-        }}>
           <div style={{
             width: 28, height: 28, borderRadius: "50%",
             background: "linear-gradient(135deg, #06C2D9 0%, #0897B0 100%)",
@@ -163,9 +198,12 @@ export default function AnalysisPage() {
           }}>
             Wallet Trace
           </span>
-        </div>
+        </button>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Inline search — takes remaining space */}
+        <NavSearch />
+
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           {data && address && <ShareButton address={address} />}
           {data && (
             <span style={{ fontSize: 11, color: "var(--text-3)" }}>
