@@ -44,8 +44,8 @@ describe("analysis cache", () => {
     jest.useFakeTimers();
     setCachedAnalysis(ADDR, MOCK_RESPONSE);
 
-    // Advance past the 1-hour TTL
-    jest.advanceTimersByTime(61 * 60 * 1000);
+    // Advance past the 24-hour TTL
+    jest.advanceTimersByTime(25 * 60 * 60 * 1000);
 
     expect(getCachedAnalysis(ADDR)).toBeNull();
     jest.useRealTimers();
@@ -54,7 +54,7 @@ describe("analysis cache", () => {
   it("removes the expired entry from the store after read", () => {
     jest.useFakeTimers();
     setCachedAnalysis(ADDR, MOCK_RESPONSE);
-    jest.advanceTimersByTime(61 * 60 * 1000);
+    jest.advanceTimersByTime(25 * 60 * 60 * 1000);
     getCachedAnalysis(ADDR); // triggers deletion
     expect(getCacheSize()).toBe(0);
     jest.useRealTimers();
@@ -63,7 +63,7 @@ describe("analysis cache", () => {
   it("returns fresh entry that has not yet expired", () => {
     jest.useFakeTimers();
     setCachedAnalysis(ADDR, MOCK_RESPONSE);
-    jest.advanceTimersByTime(59 * 60 * 1000); // 59 min — not expired
+    jest.advanceTimersByTime(23 * 60 * 60 * 1000); // 23h — not expired
     expect(getCachedAnalysis(ADDR)).toEqual(MOCK_RESPONSE);
     jest.useRealTimers();
   });
