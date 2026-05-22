@@ -54,6 +54,20 @@ const SOPHISTICATION_COLOR: Record<string, string> = {
   Institutional: "var(--green)",
 };
 
+function getScoreEmoji(score: number): string {
+  if (score === 100) return "💯";
+  if (score >= 90)   return "🏆";
+  if (score >= 80)   return "🔥";
+  if (score >= 70)   return "💎";
+  if (score >= 60)   return "🚀";
+  if (score >= 50)   return "⚡";
+  if (score >= 40)   return "🎯";
+  if (score >= 30)   return "🔍";
+  if (score >= 20)   return "🌱";
+  if (score >= 10)   return "🐣";
+  return "🥚";
+}
+
 const BREAKDOWN_LABELS: Record<string, string> = {
   walletAge:            "Wallet Age",
   protocolDiversity:    "Protocols",
@@ -180,20 +194,23 @@ export default function WalletHeader({ profile, narrative }: Props) {
           <div style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
             Sophistication
           </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 3, justifyContent: "flex-end" }}>
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontSize: 34,
-                fontWeight: 700,
-                color: scoreColor,
-                lineHeight: 1,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {sophistication.score}
-            </span>
-            <span style={{ fontSize: 11, color: "var(--text-3)" }}>/100</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
+            <span style={{ fontSize: 22, lineHeight: 1 }}>{getScoreEmoji(sophistication.score)}</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: 34,
+                  fontWeight: 700,
+                  color: scoreColor,
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {sophistication.score}
+              </span>
+              <span style={{ fontSize: 11, color: "var(--text-3)" }}>/100</span>
+            </div>
           </div>
           <div
             style={{
