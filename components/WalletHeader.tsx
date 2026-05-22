@@ -1,5 +1,41 @@
 import type { WalletProfile, AIAnalysis, WalletTag } from "@/lib/types";
 
+interface AvatarConfig { emoji: string; gradient: string; glow: string }
+
+function getAvatarConfig(behaviorType: string): AvatarConfig {
+  const t = behaviorType.toLowerCase();
+
+  if (/stable|usdc|usdt|safe|bottom.wait|bunker|harbor|savings|bottom.water|inflationary|sideways|perpetual.safe|maximum.caution|pre.entry|liquid.courage|dry.powder/i.test(t))
+    return { emoji: "🏦", gradient: "135deg, #F4A629 0%, #B87213 100%", glow: "rgba(244,166,41,0.35)" };
+
+  if (/ghost|museum|sleeper|dormant|exhibit|amnesia|web3.one.night|minimalist|mission.pause|time.capsule|patience|monk|observer|spectator|lurker|philosophical|abandoned|missing/i.test(t))
+    return { emoji: "👻", gradient: "135deg, #64748B 0%, #334155 100%", glow: "rgba(100,116,139,0.35)" };
+
+  if (/jpeg|nft|archaeologist|collector|art|gallery|pfp|profile.picture|digital.art|curator/i.test(t))
+    return { emoji: "🖼️", gradient: "135deg, #9945FF 0%, #6B21C8 100%", glow: "rgba(153,69,255,0.35)" };
+
+  if (/chain|tourist|omni|multichain|bridge|attention.deficit|world.tour|passport|ecosystem/i.test(t))
+    return { emoji: "🌍", gradient: "135deg, #3B82F6 0%, #1D4ED8 100%", glow: "rgba(59,130,246,0.35)" };
+
+  if (/gas|philanthropist|benefactor|ethereum.gas|volume|transaction|busy|1[0-9]{3}|power.user|hyperactive/i.test(t))
+    return { emoji: "⛽", gradient: "135deg, #F97316 0%, #C2410C 100%", glow: "rgba(249,115,22,0.35)" };
+
+  if (/whale|mega|institutional|fund|treasury|8.figure|9.figure|7.figure/i.test(t))
+    return { emoji: "🐋", gradient: "135deg, #06C2D9 0%, #0564A8 100%", glow: "rgba(6,194,217,0.35)" };
+
+  if (/veteran|scarred|battle|og\b|war.story|experienced|long.game|survivor|years.in|decade|early/i.test(t))
+    return { emoji: "🦕", gradient: "135deg, #84CC16 0%, #3F6212 100%", glow: "rgba(132,204,22,0.35)" };
+
+  if (/degen|ape|rekt|yolo|gambl|leverage|perp|risk/i.test(t))
+    return { emoji: "🎰", gradient: "135deg, #EC4899 0%, #9D174D 100%", glow: "rgba(236,72,153,0.35)" };
+
+  if (/yield|farm|harvest|compost|liquidity|lp\b|pool/i.test(t))
+    return { emoji: "🌾", gradient: "135deg, #22C55E 0%, #15803D 100%", glow: "rgba(34,197,94,0.35)" };
+
+  // default
+  return { emoji: "🎯", gradient: "135deg, #06C2D9 0%, #0897B0 100%", glow: "rgba(6,194,217,0.35)" };
+}
+
 const TAG_STYLES: Record<string, { bg: string; color: string }> = {
   "Yield Farmer":     { bg: "var(--green-bg)",  color: "var(--green-dim)" },
   "Treasury Wallet":  { bg: "var(--blue-bg)",   color: "var(--blue)" },
@@ -34,6 +70,7 @@ export default function WalletHeader({ profile, narrative }: Props) {
   const { identity, tags, sophistication } = profile;
   const short = `${identity.address.slice(0, 6)}...${identity.address.slice(-4)}`;
   const scoreColor = SOPHISTICATION_COLOR[sophistication.label] ?? "var(--green)";
+  const avatar = getAvatarConfig(narrative.behaviorType);
 
   return (
     <div
@@ -49,14 +86,21 @@ export default function WalletHeader({ profile, narrative }: Props) {
         {/* Avatar */}
         <div
           style={{
-            width: 44,
-            height: 44,
+            width: 52,
+            height: 52,
             borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--green) 0%, var(--blue) 100%)",
+            background: `linear-gradient(${avatar.gradient})`,
+            boxShadow: `0 0 20px ${avatar.glow}, 0 0 40px ${avatar.glow.replace("0.35", "0.12")}`,
             flexShrink: 0,
             marginTop: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 24,
           }}
-        />
+        >
+          {avatar.emoji}
+        </div>
 
         {/* Identity */}
         <div style={{ flex: 1, minWidth: 0 }}>
