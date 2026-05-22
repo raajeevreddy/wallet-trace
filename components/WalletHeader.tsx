@@ -18,6 +18,13 @@ const SOPHISTICATION_COLOR: Record<string, string> = {
   Institutional: "var(--green)",
 };
 
+const BREAKDOWN_LABELS: Record<string, string> = {
+  walletAge:            "Wallet Age",
+  protocolDiversity:    "Protocols",
+  transactionFrequency: "Tx Frequency",
+  multiChainActivity:   "Multi-chain",
+};
+
 interface Props {
   profile: WalletProfile;
   narrative: AIAnalysis;
@@ -30,40 +37,41 @@ export default function WalletHeader({ profile, narrative }: Props) {
 
   return (
     <div
-      className="wallet-header-inner"
       style={{
         background: "var(--surface)",
         border: "0.5px solid var(--border-strong)",
         borderRadius: 14,
-        padding: "24px 28px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 24,
-        flexWrap: "wrap",
+        padding: "22px 24px",
       }}
     >
-      {/* Left: identity */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 240 }}>
-        {/* Identicon avatar */}
+      {/* ── Top row: avatar + identity + sophistication badge ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
+        {/* Avatar */}
         <div
           style={{
-            width: 48,
-            height: 48,
+            width: 44,
+            height: 44,
             borderRadius: "50%",
-            background: `linear-gradient(135deg, var(--green) 0%, var(--blue) 100%)`,
+            background: "linear-gradient(135deg, var(--green) 0%, var(--blue) 100%)",
             flexShrink: 0,
+            marginTop: 2,
           }}
         />
-        <div>
+
+        {/* Identity */}
+        <div style={{ flex: 1, minWidth: 0 }}>
           {identity.ens && (
             <div
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: 700,
                 color: "var(--text)",
                 letterSpacing: "-0.02em",
                 lineHeight: 1.2,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {identity.ens}
@@ -72,7 +80,7 @@ export default function WalletHeader({ profile, narrative }: Props) {
           <div
             style={{
               fontFamily: "var(--font-mono)",
-              fontSize: identity.ens ? 12 : 15,
+              fontSize: identity.ens ? 12 : 16,
               color: identity.ens ? "var(--text-3)" : "var(--text)",
               marginTop: identity.ens ? 2 : 0,
             }}
@@ -80,81 +88,111 @@ export default function WalletHeader({ profile, narrative }: Props) {
             {short}
           </div>
 
-          {/* Behavior type from AI */}
+          {/* Archetype badge */}
           <div
             style={{
-              fontSize: 13,
-              color: "var(--text-2)",
-              marginTop: 6,
+              display: "inline-block",
+              marginTop: 8,
+              fontSize: 12,
+              color: "var(--green-dim)",
+              background: "var(--green-bg)",
+              padding: "3px 10px",
+              borderRadius: 20,
               fontStyle: "italic",
+              fontWeight: 500,
             }}
           >
             {narrative.behaviorType}
           </div>
 
-          {/* Tags */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 12 }}>
-            {tags.map((tag: WalletTag) => {
-              const style = TAG_STYLES[tag] ?? { bg: "var(--surface-2)", color: "var(--text-2)" };
-              return (
-                <span
-                  key={tag}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    padding: "3px 10px",
-                    borderRadius: 20,
-                    background: style.bg,
-                    color: style.color,
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {tag}
-                </span>
-              );
-            })}
+          {/* Wallet tags */}
+          {tags.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+              {tags.map((tag: WalletTag) => {
+                const style = TAG_STYLES[tag] ?? { bg: "var(--surface-2)", color: "var(--text-2)" };
+                return (
+                  <span
+                    key={tag}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: "2px 9px",
+                      borderRadius: 20,
+                      background: style.bg,
+                      color: style.color,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Sophistication score — compact, top-right */}
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <div style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+            Sophistication
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 3, justifyContent: "flex-end" }}>
+            <span
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: 34,
+                fontWeight: 700,
+                color: scoreColor,
+                lineHeight: 1,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {sophistication.score}
+            </span>
+            <span style={{ fontSize: 11, color: "var(--text-3)" }}>/100</span>
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              color: scoreColor,
+              fontWeight: 500,
+              marginTop: 2,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
+            }}
+          >
+            {sophistication.label}
           </div>
         </div>
       </div>
 
-      {/* Right: sophistication score */}
-      <div className="wallet-header-score" style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontSize: 11, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
-          Sophistication
-        </div>
-        <div
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: 52,
-            fontWeight: 700,
-            color: scoreColor,
-            lineHeight: 1,
-            letterSpacing: "-0.03em",
-          }}
-        >
-          {sophistication.score}
-        </div>
-        <div style={{ fontSize: 12, color: "var(--text-3)", marginTop: 2 }}>
-          / 100 · {sophistication.label}
-        </div>
-
-        {/* Score breakdown mini-bars */}
-        <div style={{ marginTop: 12, minWidth: 160 }}>
-          {Object.entries(sophistication.breakdown).map(([key, val]) => (
-            <div key={key} style={{ marginBottom: 5 }}>
+      {/* ── Breakdown bars — 2×2 grid ── */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10px 24px",
+          marginTop: 18,
+          paddingTop: 16,
+          borderTop: "0.5px solid var(--border)",
+        }}
+      >
+        {Object.entries(sophistication.breakdown).map(([key, val]) => {
+          const maxVal = 35;
+          const pct = Math.min((val / maxVal) * 100, 100);
+          const label = BREAKDOWN_LABELS[key] ?? key.replace(/([A-Z])/g, " $1").trim();
+          return (
+            <div key={key}>
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  gap: 8,
-                  fontSize: 10,
-                  color: "var(--text-3)",
-                  marginBottom: 2,
-                  textTransform: "capitalize",
+                  alignItems: "center",
+                  marginBottom: 4,
                 }}
               >
-                <span style={{ whiteSpace: "nowrap" }}>{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                <span style={{ flexShrink: 0 }}>{val}</span>
+                <span style={{ fontSize: 11, color: "var(--text-3)" }}>{label}</span>
+                <span style={{ fontSize: 11, color: "var(--text-2)", fontWeight: 500, fontFamily: "var(--font-mono)" }}>{val}</span>
               </div>
               <div
                 style={{
@@ -167,16 +205,17 @@ export default function WalletHeader({ profile, narrative }: Props) {
                 <div
                   style={{
                     height: "100%",
-                    width: `${(val / 35) * 100}%`,
+                    width: `${pct}%`,
                     background: scoreColor,
                     borderRadius: 2,
-                    opacity: 0.7,
+                    opacity: 0.65,
+                    transition: "width 0.4s ease",
                   }}
                 />
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );
