@@ -134,11 +134,12 @@ export default function HomePage() {
         {/* Tagline */}
         <p style={{
           fontSize: 17, color: "var(--text-2)",
-          maxWidth: 440, lineHeight: 1.65, margin: "0 auto",
+          maxWidth: 480, lineHeight: 1.65, margin: "0 auto",
           fontWeight: 300,
         }}>
-          Paste any Ethereum or Solana wallet address.<br />
-          <span style={{ color: "var(--green)", fontWeight: 400 }}>Institutional-grade AI analysis</span> in seconds.
+          Paste any Ethereum or Solana address and instantly see{" "}
+          <span style={{ color: "var(--green)", fontWeight: 400 }}>token balances, DeFi positions, risk score, and an AI-written summary</span>{" "}
+          of the wallet.
         </p>
 
         {/* Feature pills */}
