@@ -64,6 +64,63 @@ function NavSearch() {
   );
 }
 
+// ─── Tweet Button ─────────────────────────────────────────────────────────────
+
+function TweetButton({ address, data }: { address: string; data: AnalysisResponse }) {
+  function handleTweet() {
+    const { behaviorType } = data.narrative;
+    const { netWorthUsd, risk, identity } = data.profile;
+
+    const worth = netWorthUsd >= 1_000_000
+      ? `$${(netWorthUsd / 1_000_000).toFixed(1)}M`
+      : netWorthUsd >= 1_000
+      ? `$${(netWorthUsd / 1_000).toFixed(0)}K`
+      : `$${netWorthUsd.toFixed(0)}`;
+
+    const display = identity.ens ?? `${address.slice(0, 6)}…${address.slice(-4)}`;
+
+    const text = `🔥 AI just roasted my wallet\n\n"${behaviorType}"\n\n${display} · ${worth} · Risk ${risk.overallScore}/100\n\n`;
+    const url = `${window.location.origin}/analysis/${address}`;
+
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      "_blank",
+      "width=560,height=400"
+    );
+  }
+
+  return (
+    <button
+      onClick={handleTweet}
+      title="Share on X / Twitter"
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        fontSize: 12, color: "var(--text-3)",
+        background: "rgba(255,255,255,0.04)",
+        border: "0.5px solid rgba(255,255,255,0.10)",
+        borderRadius: 6, padding: "5px 12px",
+        cursor: "pointer", fontFamily: "var(--font-body)",
+        transition: "all 0.15s", whiteSpace: "nowrap",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(29,161,242,0.12)";
+        e.currentTarget.style.borderColor = "rgba(29,161,242,0.35)";
+        e.currentTarget.style.color = "#1DA1F2";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "rgba(255,255,255,0.04)";
+        e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)";
+        e.currentTarget.style.color = "var(--text-3)";
+      }}
+    >
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.912-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+      </svg>
+      Post
+    </button>
+  );
+}
+
 // ─── Share Button ─────────────────────────────────────────────────────────────
 
 function ShareButton({ address }: { address: string }) {
@@ -204,6 +261,7 @@ export default function AnalysisPage() {
         <NavSearch />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {data && address && <TweetButton address={address} data={data} />}
           {data && address && <ShareButton address={address} />}
           {data && (
             <span style={{ fontSize: 11, color: "var(--text-3)" }}>
