@@ -154,6 +154,7 @@ export interface AIAnalysis {
   keyInsights: string[];
   riskFlags: string[];
   analystNote?: string;
+  isQuotaError?: boolean;
 }
 
 // ─── Full Wallet Profile ─────────────────────────────────────────────────────

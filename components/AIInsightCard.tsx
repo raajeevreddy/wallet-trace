@@ -5,6 +5,33 @@ interface Props {
 }
 
 export default function AIInsightCard({ narrative }: Props) {
+  if (narrative.isQuotaError) {
+    return (
+      <div style={{
+        background: "var(--surface)",
+        border: "0.5px solid rgba(244,166,41,0.25)",
+        borderRadius: 14,
+        padding: "24px 28px",
+        display: "flex", alignItems: "center", gap: 16,
+      }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
+          background: "rgba(244,166,41,0.10)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 18,
+        }}>⏳</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>
+            AI roast unavailable right now
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.6 }}>
+            We&apos;ve hit our free API limit for the moment. The rest of the analysis above is fully accurate — check back in a few minutes for the roast.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       style={{

@@ -99,6 +99,10 @@ export async function generateNarrative(
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        console.warn("[narrator] Anthropic quota reached (429)");
+        return getQuotaErrorNarrative();
+      }
       const err = await response.text();
       throw new Error(`Anthropic API error: ${response.status} — ${err}`);
     }
@@ -115,6 +119,18 @@ export async function generateNarrative(
     console.error("[narrator] generateNarrative error:", err);
     return getMockNarrative(profile);
   }
+}
+
+// ─── Quota error ─────────────────────────────────────────────────────────────
+
+function getQuotaErrorNarrative(): AIAnalysis {
+  return {
+    summary: "",
+    behaviorType: "",
+    keyInsights: [],
+    riskFlags: [],
+    isQuotaError: true,
+  };
 }
 
 // ─── Mock fallback ────────────────────────────────────────────────────────────
