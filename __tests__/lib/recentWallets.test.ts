@@ -112,13 +112,13 @@ describe("saveRecentWallet", () => {
   });
 
   it("caps the list at 5 entries", () => {
-    [ADDR_A, ADDR_B, ADDR_C, ADDR_D, ADDR_E, ADDR_F].forEach(saveRecentWallet);
+    [ADDR_A, ADDR_B, ADDR_C, ADDR_D, ADDR_E, ADDR_F].forEach((a) => saveRecentWallet(a));
     const result = getRecentWallets();
     expect(result).toHaveLength(5);
   });
 
   it("drops the oldest entry when the list is full", () => {
-    [ADDR_A, ADDR_B, ADDR_C, ADDR_D, ADDR_E, ADDR_F].forEach(saveRecentWallet);
+    [ADDR_A, ADDR_B, ADDR_C, ADDR_D, ADDR_E, ADDR_F].forEach((a) => saveRecentWallet(a));
     const result = getRecentWallets();
     // ADDR_A was saved first → should be dropped
     expect(result.map((w) => w.address)).not.toContain(ADDR_A);

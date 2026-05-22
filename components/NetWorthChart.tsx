@@ -13,8 +13,7 @@ function fmtDate(ts: number) {
   return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload }: any) {
+function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: PricePoint }[] }) {
   if (!active || !payload?.length) return null;
   const { timestamp, usdValue } = payload[0].payload as PricePoint;
   return (
