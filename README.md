@@ -1,20 +1,45 @@
 # Wallet Trace
 
-Institutional-grade AI wallet analysis. Paste any Ethereum address, get a Bloomberg-style report in seconds.
+AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any Ethereum or Solana address — get token balances, DeFi positions, risk scoring, and a brutally honest AI personality profile.
+
+**Live:** [walletrace.vercel.app](https://walletrace.vercel.app)
+
+---
+
+## Features
+
+- **Multi-chain** — Ethereum, Base, Arbitrum, Solana (+ ENS resolution)
+- **Full portfolio** — token balances, DeFi positions (Aave, Uniswap), NFT holdings
+- **Risk scoring** — concentration, leverage, bridge exposure, smart contract risk
+- **AI roast** — Claude Haiku generates a savage-but-accurate wallet personality profile
+- **104 mock roasts** — data-driven fallback library across 8 archetypes when API is unavailable
+- **Share / Tweet** — one-click sharing with per-wallet OG images
+- **24h cache** — in-memory cache with 500-entry FIFO to minimize API costs
+- **Recent searches** — persisted in localStorage
+
+---
 
 ## Stack
 
-- **Frontend**: Next.js 15, React 19, TailwindCSS
-- **Charts**: Recharts
-- **Blockchain data**: Alchemy SDK (ETH/Base/Arbitrum), Helius (Solana), Etherscan
-- **AI**: Anthropic Claude API
-- **Deploy**: Vercel
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 15 (App Router), React 19, TypeScript |
+| Styling | Plain CSS variables (no Tailwind) |
+| ETH data | Alchemy SDK — tokens, NFTs, transactions, ENS |
+| Solana data | Helius API — SPL tokens, transactions, NFTs |
+| DeFi positions | The Graph — Aave V3, Uniswap V3 subgraphs |
+| Prices | CoinGecko — spot prices + 30-day history |
+| Wallet age | Etherscan — first transaction timestamp |
+| AI | Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) |
+| OG images | Next.js `ImageResponse` (edge runtime) |
+| Deploy | Vercel |
+| Tests | Jest |
 
 ---
 
 ## Local Setup
 
-### 1. Install dependencies
+### 1. Install
 
 ```bash
 npm install
@@ -26,19 +51,17 @@ npm install
 cp .env.local.example .env.local
 ```
 
-Edit `.env.local` and fill in your keys:
-
 | Variable | Where to get it | Required? |
 |----------|-----------------|-----------|
-| `ALCHEMY_API_KEY` | [dashboard.alchemy.com](https://dashboard.alchemy.com) | ✅ Yes |
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) | ✅ Yes |
-| `HELIUS_API_KEY` | [helius.dev](https://helius.dev) | Optional* |
-| `ETHERSCAN_API_KEY` | [etherscan.io/apis](https://etherscan.io/apis) | Optional* |
-| `COINGECKO_API_KEY` | [coingecko.com/en/api](https://www.coingecko.com/en/api/pricing) | Optional* |
+| `ALCHEMY_API_KEY` | [dashboard.alchemy.com](https://dashboard.alchemy.com) | ✅ ETH analysis |
+| `HELIUS_API_KEY` | [helius.dev](https://helius.dev) | ✅ Solana analysis |
+| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) | Optional — falls back to 104 mock roasts |
+| `ETHERSCAN_API_KEY` | [etherscan.io/apis](https://etherscan.io/apis) | Optional — improves wallet age detection |
+| `COINGECKO_API_KEY` | [coingecko.com/en/api](https://www.coingecko.com/en/api/pricing) | Optional — removes free-tier rate limits |
 
-> *The app runs without these — Helius enables Solana analysis, Etherscan improves wallet-age detection, and a CoinGecko Pro key removes free-tier rate limits.
+> Without `ANTHROPIC_API_KEY` the app still works — it selects a roast from the 104-entry mock library based on the wallet's dominant trait.
 
-### 3. Run locally
+### 3. Run
 
 ```bash
 npm run dev
@@ -52,47 +75,98 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```
 User → Next.js App Router
+     → GET /api/ens?name=   (ENS resolution)
      → POST /api/analyze
+       → 24h in-memory cache (500 entries FIFO)
        → Wallet Orchestrator
-         ├── Alchemy SDK (ETH transactions, balances, ENS, NFTs)
-         ├── Helius API (Solana balances, transactions, NFTs)
-         ├── The Graph (Aave V3 + Uniswap V3 DeFi positions)
-         ├── CoinGecko (token prices, 30-day price history)
-         └── Etherscan (wallet age fallback)
-       → Classifiers (tags, sophistication, risk)
-       → Claude API (narrative generation)
+         ├── Alchemy SDK     (ETH tokens, NFTs, txns, ENS)
+         ├── Helius API      (Solana tokens, NFTs, txns)
+         ├── The Graph       (Aave V3 + Uniswap V3 positions)
+         ├── CoinGecko       (prices, 30-day history)
+         └── Etherscan       (wallet age fallback)
+       → Classifiers         (tags, sophistication score, risk profile)
+       → Claude Haiku API    (roast narrative) or roastLibrary fallback
      → Dashboard UI
+     → /analysis/[address]/opengraph-image (edge, per-wallet OG)
 ```
+
+---
 
 ## Project Structure
 
 ```
 ├── app/
-│   ├── page.tsx                    # Homepage
-│   ├── analysis/[address]/page.tsx # Dashboard
-│   └── api/analyze/route.ts        # Main API endpoint
+│   ├── page.tsx                              # Home — search + examples
+│   ├── layout.tsx                            # Root layout + Vercel Analytics
+│   ├── analysis/
+│   │   └── [address]/
+│   │       ├── page.tsx                      # Wallet dashboard
+│   │       └── opengraph-image.tsx           # Per-wallet OG image (edge)
+│   └── api/
+│       ├── analyze/route.ts                  # Main analysis endpoint
+│       └── ens/route.ts                      # ENS → address resolution
 ├── lib/
-│   ├── types.ts                    # All TypeScript types
-│   ├── orchestrator.ts             # Data aggregation
-│   ├── classifiers.ts              # Heuristic scoring
+│   ├── types.ts                              # All TypeScript interfaces
+│   ├── orchestrator.ts                       # Data aggregation pipeline
+│   ├── classifiers.ts                        # Tag/risk/sophistication scoring
+│   ├── cache.ts                              # In-memory 24h / 500-entry cache
+│   ├── recentWallets.ts                      # localStorage recent searches
 │   ├── providers/
-│   │   ├── alchemy.ts
-│   │   ├── helius.ts
-│   │   ├── thegraph.ts
-│   │   ├── coingecko.ts
-│   │   └── etherscan.ts
+│   │   ├── alchemy.ts                        # ETH tokens, NFTs, transactions
+│   │   ├── helius.ts                         # Solana tokens, NFTs, transactions
+│   │   ├── thegraph.ts                       # Aave V3 + Uniswap V3 positions
+│   │   ├── coingecko.ts                      # Prices + price history
+│   │   └── etherscan.ts                      # Wallet age
 │   └── ai/
-│       └── narrator.ts             # Claude API integration
-└── components/
-    ├── WalletHeader.tsx
-    ├── MetricGrid.tsx
-    ├── ProtocolChart.tsx
-    ├── StablecoinPanel.tsx
-    ├── ChainBreakdown.tsx
-    ├── RiskTable.tsx
-    ├── AIInsightCard.tsx
-    └── DashboardSkeleton.tsx
+│       ├── narrator.ts                       # Claude API + fallback routing
+│       └── roastLibrary.ts                   # 104 data-driven roast templates
+├── components/
+│   ├── WalletHeader.tsx                      # Address, ENS, tags, sophistication
+│   ├── MetricGrid.tsx                        # Net worth, age, tx count, protocols
+│   ├── NetWorthChart.tsx                     # 30-day portfolio trend
+│   ├── RiskTable.tsx                         # Risk profile breakdown
+│   ├── AIInsightCard.tsx                     # Roast card + quota error state
+│   ├── ProtocolChart.tsx                     # Protocol interaction breakdown
+│   ├── StablecoinPanel.tsx                   # Stablecoin allocation
+│   ├── ChainBreakdown.tsx                    # Multi-chain distribution
+│   ├── TokenHoldings.tsx                     # Token list
+│   ├── NftHoldings.tsx                       # NFT collections
+│   ├── DeFiPositions.tsx                     # Aave/Uniswap positions
+│   ├── TransactionTimeline.tsx               # Recent transactions (chain-aware explorer links)
+│   └── DashboardSkeleton.tsx                 # Loading skeleton
+└── __tests__/                                # Jest test suite (287 tests)
 ```
+
+---
+
+## AI Roast System
+
+The roast system has two layers:
+
+**1. Live generation** — When `ANTHROPIC_API_KEY` is set, Claude Haiku generates a fresh roast from the wallet's actual data. Prompt enforces specific numbers ("your 73% stablecoin bag"), crypto slang, and a unique `behaviorType` nickname.
+
+**2. Mock library fallback** — `lib/ai/roastLibrary.ts` contains 104 hand-written roast templates across 8 archetypes. Selected by matching the wallet's dominant trait, then randomly picking within the archetype (so repeat analyses feel different):
+
+| Archetype | Trigger | Roasts |
+|-----------|---------|--------|
+| Stablecoin Bunker | stablecoins > 65% | 16 |
+| Ghost Wallet | transactions < 15 | 14 |
+| JPEG Archaeologist | NFTs > 15 | 12 |
+| Omnichained Tourist | chains ≥ 4 | 10 |
+| Gas Philanthropist | transactions > 800 | 10 |
+| Forgotten OG | age > 4yr + worth < $50K | 10 |
+| Whale | net worth > $1M | 8 |
+| General | everything else | 24 |
+
+To add roasts: append new `RoastFn` entries to the relevant array in `roastLibrary.ts`.
+
+To change the AI persona: edit `SYSTEM_PROMPT` in `narrator.ts`.
+
+---
+
+## Quota Handling
+
+If the Anthropic API returns a 429 (quota exceeded), `AIInsightCard` shows a friendly amber banner instead of silently falling back — so users know the roast is temporarily unavailable, not missing.
 
 ---
 
@@ -102,38 +176,34 @@ User → Next.js App Router
 npx vercel deploy
 ```
 
-Add all env vars in the Vercel dashboard under Project → Settings → Environment Variables.
+Add all env vars in the Vercel dashboard: Project → Settings → Environment Variables.
 
-The `app/api/analyze/route.ts` sets `maxDuration = 60` to handle slow blockchain API responses on Vercel's serverless functions.
-
----
-
-## Adding a new blockchain data provider
-
-1. Create `lib/providers/yourprovider.ts`
-2. Export typed async functions
-3. Add calls in `lib/orchestrator.ts`
-4. Merge data into `WalletProfile`
-
-## Improving the AI narrative
-
-Edit `lib/ai/narrator.ts`:
-- Modify `SYSTEM_PROMPT` to change analyst persona
-- Modify `buildPrompt()` to include more data fields
-- Adjust `max_tokens` for longer reports
+`app/api/analyze/route.ts` sets `maxDuration = 60` to handle slow blockchain API responses on Vercel hobby.
 
 ---
 
-## Cost estimate
+## Cost Estimate
 
-At 1,000 analyses/month:
+At 1,000 analyses/month with 24h caching (real-world unique requests ~300/month):
 
 | Service | Cost |
 |---------|------|
 | Alchemy (free tier) | $0 |
 | Helius (free tier) | $0 |
-| The Graph (hosted service) | $0 |
+| The Graph (hosted) | $0 |
 | CoinGecko (free tier) | $0 |
-| Anthropic Claude Sonnet | ~$9 |
+| Anthropic Claude Haiku | ~$0.75 |
 | Vercel (hobby) | $0 |
-| **Total** | **~$9/mo** |
+| **Total** | **~$0.75/mo** |
+
+> Switched from Claude Sonnet to Haiku (10× cheaper) and extended cache from 1h to 24h. The mock roast library means quota exhaustion never breaks the user experience.
+
+---
+
+## Running Tests
+
+```bash
+npm test              # all 287 tests
+npm test -- --watch   # watch mode
+npm test -- --coverage
+```

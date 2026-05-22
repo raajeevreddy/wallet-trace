@@ -38,13 +38,12 @@ export default function WalletHeader({ profile, narrative }: Props) {
         padding: "24px 28px",
         display: "flex",
         alignItems: "flex-start",
-        justifyContent: "space-between",
         gap: 24,
         flexWrap: "wrap",
       }}
     >
       {/* Left: identity */}
-      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, flex: 1, minWidth: 240 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, minWidth: 240 }}>
         {/* Identicon avatar */}
         <div
           style={{
@@ -140,21 +139,22 @@ export default function WalletHeader({ profile, narrative }: Props) {
         </div>
 
         {/* Score breakdown mini-bars */}
-        <div style={{ marginTop: 12, width: 160 }}>
+        <div style={{ marginTop: 12, minWidth: 160 }}>
           {Object.entries(sophistication.breakdown).map(([key, val]) => (
             <div key={key} style={{ marginBottom: 5 }}>
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
+                  gap: 8,
                   fontSize: 10,
                   color: "var(--text-3)",
                   marginBottom: 2,
                   textTransform: "capitalize",
                 }}
               >
-                <span>{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                <span>{val}</span>
+                <span style={{ whiteSpace: "nowrap" }}>{key.replace(/([A-Z])/g, " $1").trim()}</span>
+                <span style={{ flexShrink: 0 }}>{val}</span>
               </div>
               <div
                 style={{

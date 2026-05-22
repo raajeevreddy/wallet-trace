@@ -278,7 +278,7 @@ export default function HomePage() {
           <p style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em", marginBottom: 10 }}>
             Try an example
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2, WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
             {EXAMPLE_WALLETS.map((w) => (
               <button
                 key={w.address}
@@ -290,6 +290,7 @@ export default function HomePage() {
                   borderRadius: 20, color: "var(--text-2)",
                   cursor: "pointer", fontFamily: "var(--font-body)",
                   transition: "all 0.15s",
+                  whiteSpace: "nowrap", flexShrink: 0,
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.10)"; e.currentTarget.style.borderColor = "rgba(6,194,217,0.25)"; e.currentTarget.style.color = "var(--text)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)"; e.currentTarget.style.color = "var(--text-2)"; }}
@@ -302,7 +303,11 @@ export default function HomePage() {
       </div>
 
       {/* ── Footer caption ────────────────────────────────────────────────────── */}
-      <p style={{ marginTop: 28, fontSize: 12, color: "var(--text-3)", textAlign: "center" }}>
+      <p style={{
+        position: "absolute", bottom: 24, left: 0, right: 0,
+        fontSize: 12, color: "var(--text-3)", textAlign: "center",
+        pointerEvents: "none",
+      }}>
         Powered by Alchemy · Helius · Claude AI · CoinGecko
       </p>
     </main>

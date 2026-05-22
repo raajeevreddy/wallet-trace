@@ -263,12 +263,6 @@ export default function AnalysisPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           {data && address && <TweetButton address={address} data={data} />}
           {data && address && <ShareButton address={address} />}
-          {data && (
-            <span style={{ fontSize: 11, color: "var(--text-3)" }}>
-              {(data.analysisMs / 1000).toFixed(1)}s
-            </span>
-          )}
-          {!data && <span style={{ width: 64 }} />}
         </div>
       </nav>
 
