@@ -213,6 +213,9 @@ export default function AnalysisPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <WalletHeader profile={data.profile} narrative={data.narrative} />
             <MetricGrid profile={data.profile} />
+            {/* Risk + AI insight at the top */}
+            <RiskTable risk={data.profile.risk} />
+            <AIInsightCard narrative={data.narrative} />
             {/* Net worth trend chart */}
             <NetWorthChart
               history={data.profile.netWorthHistory}
@@ -227,15 +230,10 @@ export default function AnalysisPage() {
             </div>
             {/* DeFi positions (only shown when positions exist) */}
             <DeFiPositions defi={data.profile.defiPositions} />
-            {/* Token holdings + Transaction timeline */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
-              <TokenHoldings tokens={data.profile.tokens} netWorthUsd={data.profile.netWorthUsd} />
-              <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} chain={data.profile.chains[0]?.chain ?? "ethereum"} />
-            </div>
-
+            <TokenHoldings tokens={data.profile.tokens} netWorthUsd={data.profile.netWorthUsd} />
             <NftHoldings nfts={data.profile.nfts} />
-            <RiskTable risk={data.profile.risk} />
-            <AIInsightCard narrative={data.narrative} />
+            {/* Recent transactions at the bottom */}
+            <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} chain={data.profile.chains[0]?.chain ?? "ethereum"} />
           </div>
         )}
       </div>

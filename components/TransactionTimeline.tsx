@@ -194,10 +194,12 @@ export default function TransactionTimeline({ transactions, walletAddress, chain
         </div>
       )}
 
-      {/* Transaction rows */}
-      {sorted.map((tx) => (
-        <TxRow key={tx.hash} tx={tx} walletAddress={walletAddress} />
-      ))}
+      {/* Transaction rows — 5 visible, rest scrollable */}
+      <div style={{ maxHeight: 260, overflowY: "auto", scrollbarWidth: "thin" }}>
+        {sorted.map((tx) => (
+          <TxRow key={tx.hash} tx={tx} walletAddress={walletAddress} />
+        ))}
+      </div>
 
       {/* Explorer link */}
       {sorted.length > 0 && (
