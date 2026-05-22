@@ -34,22 +34,26 @@ describe("generateNarrative", () => {
     expect(Array.isArray(result.riskFlags)).toBe(true);
   });
 
-  it("returns roast mock narrative for high-sophistication wallets", async () => {
-    const highSophisticationProfile = {
-      ...mockProfile,
-      sophistication: { ...mockProfile.sophistication, score: 70 },
-    };
-    const result = await generateNarrative(highSophisticationProfile);
-    expect(result.behaviorType).toBe("Overengineered Yield Chaser");
+  it("returns a non-empty behaviorType from mock for any wallet", async () => {
+    const result = await generateNarrative(mockProfile);
+    expect(result.behaviorType.length).toBeGreaterThan(0);
+    expect(result.summary.length).toBeGreaterThan(0);
+    expect(Array.isArray(result.keyInsights)).toBe(true);
   });
 
-  it("returns roast mock narrative for lower-sophistication wallets", async () => {
-    const lowProfile = {
+  it("picks stablecoin archetype when stablecoin % is very high", async () => {
+    const stableHeavy = {
       ...mockProfile,
-      sophistication: { ...mockProfile.sophistication, score: 40, label: "Intermediate" as const },
+      stablecoins: { ...mockProfile.stablecoins, portfolioPercentage: 80 },
     };
-    const result = await generateNarrative(lowProfile);
-    expect(result.behaviorType).toBe("Degen on Training Wheels");
+    const result = await generateNarrative(stableHeavy);
+    expect(result.behaviorType).toBe("Professional Bottom-Waiter");
+  });
+
+  it("picks ghost wallet archetype for very low transaction count", async () => {
+    const ghost = { ...mockProfile, totalTransactions: 3 };
+    const result = await generateNarrative(ghost);
+    expect(result.behaviorType).toBe("Crypto Museum Exhibit");
   });
 
   it("does not call fetch when API key is missing", async () => {
