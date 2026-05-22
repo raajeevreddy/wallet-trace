@@ -1,22 +1,22 @@
 import type { WalletProfile, AIAnalysis } from "../types";
 
-const SYSTEM_PROMPT = `You are a senior blockchain intelligence analyst at an institutional crypto research firm. 
-You write concise, precise, and insightful wallet analysis reports.
+const SYSTEM_PROMPT = `You are a savage but loveable crypto roast comedian who has read every on-chain transaction ever made. You roast wallets the way a comedian roasts a celebrity — brutally honest, specific, funny, and weirdly accurate. You find the most embarrassing patterns in someone's on-chain history and call them out with wit.
 
 Your writing style:
-- Analytical and authoritative, never sensational
-- Uses specific data points to support conclusions
-- Infers probable intent from on-chain behavior
-- Avoids speculation without evidence
-- Bloomberg Terminal meets plain English
+- Punchy and irreverent — like crypto Twitter if it were actually funny
+- Roast with specific data: low tx count, bag-holding, aping into memecoins, stablecoin hoarding, gas fee waste, buying tops, chasing yields that rugged
+- Use crypto slang naturally: ngmi, gm, ape, rugged, paper hands, diamond hands, degen, maxi, CT, LFG, ser, fren, wagmi
+- Short punchy sentences. No corporate speak whatsoever.
+- Make the person feel seen — the best roasts are true
+- Keep it fun, not mean-spirited. Laugh WITH them, not AT them
 
 You always respond with valid JSON matching this exact schema:
 {
-  "summary": "2-3 sentence behavioral overview",
-  "behaviorType": "one short label like 'DeFi Yield Optimizer' or 'Stablecoin Treasury'",
-  "keyInsights": ["insight 1", "insight 2", "insight 3"],
-  "riskFlags": ["flag 1", "flag 2"],
-  "analystNote": "one optional forward-looking observation"
+  "summary": "2-3 sentence roast opener — the hook that makes them laugh and cringe",
+  "behaviorType": "a savage but funny one-liner label, e.g. 'Professional Bag Holder', 'Gas Fee Philanthropist', 'Stablecoin Coward', 'Degen on Training Wheels'",
+  "keyInsights": ["roast observation 1", "roast observation 2", "roast observation 3"],
+  "riskFlags": ["a risk called out in roast style", "another one"],
+  "analystNote": "one closing zinger or backhanded compliment"
 }`;
 
 function buildPrompt(profile: WalletProfile): string {
@@ -120,36 +120,36 @@ export async function generateNarrative(
 // ─── Mock fallback ────────────────────────────────────────────────────────────
 
 function getMockNarrative(profile: WalletProfile): AIAnalysis {
-  const { sophistication, stablecoins, protocols } = profile;
+  const { sophistication, stablecoins, protocols, totalTransactions } = profile;
 
-  const topProtocol = protocols[0]?.protocol ?? "DeFi protocols";
+  const topProtocol = protocols[0]?.protocol ?? "whatever was trending that week";
 
   if (sophistication.score >= 70) {
     return {
-      summary: `This wallet exhibits sophisticated DeFi behavior with a strong bias toward yield optimization and capital preservation. The ${stablecoins.portfolioPercentage.toFixed(0)}% stablecoin allocation and heavy use of ${topProtocol} suggest deliberate treasury management rather than speculative positioning.`,
-      behaviorType: "Institutional DeFi Operator",
+      summary: `Ser, you've been around long enough to know better, yet here you are with ${stablecoins.portfolioPercentage.toFixed(0)}% in stables like you're still waiting for "the dip." ${protocols.length} protocols deep and you're farming ${topProtocol} like it's 2021. Respect the grind, question the life choices.`,
+      behaviorType: "Overengineered Yield Chaser",
       keyInsights: [
-        `${stablecoins.portfolioPercentage.toFixed(0)}% stablecoin allocation signals capital preservation priority`,
-        `Multi-chain activity across ${profile.chains.length} networks indicates sophisticated bridging strategy`,
-        `${protocols.length} unique protocol interactions demonstrates deep DeFi familiarity`,
+        `${stablecoins.portfolioPercentage.toFixed(0)}% stablecoins — either genius market timing or absolute paralysis, no in-between`,
+        `Active on ${profile.chains.length} chains — paying gas fees on all of them like it's a hobby`,
+        `${protocols.length} protocol interactions — you've either found alpha or you just can't stop clicking`,
       ],
       riskFlags: [
-        "Bridge exposure introduces smart contract risk across multiple chains",
-        "High stablecoin concentration may limit upside during market rallies",
+        "Bridge exposure: you're one bad tx away from a very educational experience",
+        "This much complexity means one exploit away from a humbling net worth update",
       ],
-      analystNote:
-        "Behavior resembles a crypto-native treasury or professional farming operation. Watch for Pendle and Aave position rotations as yield opportunities shift.",
+      analystNote: "Legitimately impressive or completely unhinged — the chain doesn't judge. Probably both. wagmi ser.",
     };
   }
 
   return {
-    summary: `This wallet shows active DeFi participation with moderate sophistication. Transaction patterns suggest a retail investor gaining experience with on-chain protocols.`,
-    behaviorType: "Active DeFi Participant",
+    summary: `${totalTransactions} transactions and you're still here — respect the persistence, fren. Portfolio's giving 'bought the tutorial, skipped the strategy' energy but that's okay, everyone starts somewhere. The blockchain remembers everything though. Everything.`,
+    behaviorType: "Degen on Training Wheels",
     keyInsights: [
-      "Regular protocol interactions indicate genuine on-chain engagement",
-      "Portfolio composition reflects balanced risk approach",
+      "Transaction history suggests learning by doing — expensive but effective",
+      "Portfolio concentration is very bold of you, very bold indeed",
+      `Found ${topProtocol} — now let's see if you hold through the next 80% drawdown`,
     ],
-    riskFlags: ["Concentration in a small number of assets elevates single-asset risk"],
-    analystNote: "Early-stage DeFi user with potential to expand to more sophisticated strategies.",
+    riskFlags: ["Concentration risk: you're one bad token pick from a very character-building experience"],
+    analystNote: "Early days. The wallets that make it are the ones that don't quit. gm and good luck out there.",
   };
 }

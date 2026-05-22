@@ -34,22 +34,22 @@ describe("generateNarrative", () => {
     expect(Array.isArray(result.riskFlags)).toBe(true);
   });
 
-  it("returns Institutional mock narrative for high-sophistication wallets", async () => {
+  it("returns roast mock narrative for high-sophistication wallets", async () => {
     const highSophisticationProfile = {
       ...mockProfile,
       sophistication: { ...mockProfile.sophistication, score: 70 },
     };
     const result = await generateNarrative(highSophisticationProfile);
-    expect(result.behaviorType).toBe("Institutional DeFi Operator");
+    expect(result.behaviorType).toBe("Overengineered Yield Chaser");
   });
 
-  it("returns generic mock narrative for lower-sophistication wallets", async () => {
+  it("returns roast mock narrative for lower-sophistication wallets", async () => {
     const lowProfile = {
       ...mockProfile,
       sophistication: { ...mockProfile.sophistication, score: 40, label: "Intermediate" as const },
     };
     const result = await generateNarrative(lowProfile);
-    expect(result.behaviorType).toBe("Active DeFi Participant");
+    expect(result.behaviorType).toBe("Degen on Training Wheels");
   });
 
   it("does not call fetch when API key is missing", async () => {
