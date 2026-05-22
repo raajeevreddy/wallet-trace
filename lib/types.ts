@@ -9,6 +9,19 @@ export interface WalletIdentity {
 
 // ─── Token & Asset ───────────────────────────────────────────────────────────
 
+export interface NftCollection {
+  contractAddress: string;
+  name: string;
+  count: number;
+  sampleImageUrl?: string;
+  tokenType: "ERC721" | "ERC1155";
+}
+
+export interface NftSummary {
+  totalCount: number;
+  collections: NftCollection[];
+}
+
 export interface TokenBalance {
   symbol: string;
   name: string;
@@ -106,6 +119,33 @@ export interface SophisticationScore {
   };
 }
 
+// ─── DeFi Positions ─────────────────────────────────────────────────────────
+
+export interface DeFiPosition {
+  protocol: string;
+  positionType: "supply" | "borrow" | "lp";
+  asset: string;
+  asset2?: string;  // second token for LP positions
+  amount: number;
+  amount2?: number; // second token amount for LP positions
+  usdValue: number;
+  apy?: number;
+}
+
+export interface DeFiPortfolio {
+  positions: DeFiPosition[];
+  totalSuppliedUsd: number;
+  totalBorrowedUsd: number;
+  totalLpUsd: number;
+}
+
+// ─── Price History ───────────────────────────────────────────────────────────
+
+export interface PricePoint {
+  timestamp: number; // unix ms
+  usdValue: number;
+}
+
 // ─── AI Narrative ────────────────────────────────────────────────────────────
 
 export interface AIAnalysis {
@@ -130,6 +170,9 @@ export interface WalletProfile {
   tags: WalletTag[];
   sophistication: SophisticationScore;
   recentTransactions: Transaction[];
+  nfts: NftSummary;
+  defiPositions: DeFiPortfolio;
+  netWorthHistory: PricePoint[];
   analyzedAt: number; // unix ms
 }
 

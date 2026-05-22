@@ -4,6 +4,9 @@ import type {
   TokenBalance,
   ChainActivity,
   StablecoinSummary,
+  NftSummary,
+  DeFiPortfolio,
+  PricePoint,
 } from "../lib/types";
 
 export const mockTokens: TokenBalance[] = [
@@ -38,6 +41,44 @@ export const mockStablecoins: StablecoinSummary = {
   isTreasuryLike: false,
 };
 
+export const mockNfts: NftSummary = {
+  totalCount: 5,
+  collections: [
+    {
+      contractAddress: "0xbc4ca0eda7647a8ab7c2061c2e118a18a936f13d",
+      name: "Bored Ape Yacht Club",
+      count: 2,
+      sampleImageUrl: "https://example.com/bayc.png",
+      tokenType: "ERC721",
+    },
+    {
+      contractAddress: "0x60e4d786628fea6478f785a6d7e704777c86a7c6",
+      name: "Mutant Ape Yacht Club",
+      count: 3,
+      sampleImageUrl: undefined,
+      tokenType: "ERC721",
+    },
+  ],
+};
+
+export const mockDefiPortfolio: DeFiPortfolio = {
+  positions: [
+    { protocol: "Aave V3", positionType: "supply", asset: "USDC", amount: 50_000, usdValue: 50_000 },
+    { protocol: "Aave V3", positionType: "borrow", asset: "ETH", amount: 2, usdValue: 6_000 },
+    { protocol: "Uniswap V3", positionType: "lp", asset: "ETH", asset2: "USDC", amount: 1, amount2: 3_000, usdValue: 6_000 },
+  ],
+  totalSuppliedUsd: 50_000,
+  totalBorrowedUsd: 6_000,
+  totalLpUsd: 6_000,
+};
+
+export const mockNetWorthHistory: PricePoint[] = [
+  { timestamp: Date.now() - 30 * 86_400_000, usdValue: 150_000 },
+  { timestamp: Date.now() - 20 * 86_400_000, usdValue: 160_000 },
+  { timestamp: Date.now() - 10 * 86_400_000, usdValue: 155_000 },
+  { timestamp: Date.now(), usdValue: 165_000 },
+];
+
 export const mockProfile: WalletProfile = {
   identity: {
     address: "0xd8da6bf26964af9d7eed9e03e53415d37aa96045",
@@ -67,5 +108,8 @@ export const mockProfile: WalletProfile = {
     breakdown: { walletAge: 25, protocolDiversity: 21, transactionFrequency: 16, multiChainActivity: 20 },
   },
   recentTransactions: [],
+  nfts: mockNfts,
+  defiPositions: mockDefiPortfolio,
+  netWorthHistory: mockNetWorthHistory,
   analyzedAt: Date.now(),
 };

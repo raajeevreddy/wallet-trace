@@ -13,6 +13,9 @@ import StablecoinPanel from "@/components/StablecoinPanel";
 import RiskTable from "@/components/RiskTable";
 import ChainBreakdown from "@/components/ChainBreakdown";
 import AIInsightCard from "@/components/AIInsightCard";
+import NftHoldings from "@/components/NftHoldings";
+import DeFiPositions from "@/components/DeFiPositions";
+import NetWorthChart from "@/components/NetWorthChart";
 import DashboardSkeleton from "@/components/DashboardSkeleton";
 
 // ─── Share Button ─────────────────────────────────────────────────────────────
@@ -78,7 +81,8 @@ export default function AnalysisPage() {
         })
         .catch(() => { setError("Failed to resolve ENS name."); setLoading(false); });
     } else {
-      setAddress(rawParam.toLowerCase());
+      // Ethereum addresses are case-insensitive; Solana addresses are case-sensitive base58
+      setAddress(rawParam.startsWith("0x") ? rawParam.toLowerCase() : rawParam);
     }
   }, [rawParam, router]);
 
@@ -110,9 +114,9 @@ export default function AnalysisPage() {
   }, [address, fetchAnalysis]);
 
   return (
-    <div style={{ minHeight: "100vh", padding: "24px 16px 64px", position: "relative" }}>
+    <div className="dashboard-content" style={{ minHeight: "100vh", padding: "24px 16px 64px", position: "relative" }}>
       {/* Top nav */}
-      <nav style={{
+      <nav className="dashboard-nav" style={{
         maxWidth: 1080, margin: "0 auto 28px",
         display: "flex", alignItems: "center",
         justifyContent: "space-between", gap: 12,
@@ -203,6 +207,11 @@ export default function AnalysisPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <WalletHeader profile={data.profile} narrative={data.narrative} />
             <MetricGrid profile={data.profile} />
+            {/* Net worth trend chart */}
+            <NetWorthChart
+              history={data.profile.netWorthHistory}
+              chain={data.profile.chains[0]?.chain ?? "ethereum"}
+            />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
               <ProtocolChart protocols={data.profile.protocols} />
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -210,12 +219,15 @@ export default function AnalysisPage() {
                 <ChainBreakdown chains={data.profile.chains} />
               </div>
             </div>
-            {/* Row 4: Token holdings + Transaction timeline */}
+            {/* DeFi positions (only shown when positions exist) */}
+            <DeFiPositions defi={data.profile.defiPositions} />
+            {/* Token holdings + Transaction timeline */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
               <TokenHoldings tokens={data.profile.tokens} netWorthUsd={data.profile.netWorthUsd} />
               <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} />
             </div>
 
+            <NftHoldings nfts={data.profile.nfts} />
             <RiskTable risk={data.profile.risk} />
             <AIInsightCard narrative={data.narrative} />
           </div>

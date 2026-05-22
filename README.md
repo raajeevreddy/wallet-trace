@@ -6,7 +6,7 @@ Institutional-grade AI wallet analysis. Paste any Ethereum address, get a Bloomb
 
 - **Frontend**: Next.js 15, React 19, TailwindCSS
 - **Charts**: Recharts
-- **Blockchain data**: Alchemy SDK (ETH/Base/Arbitrum), DeBank API, Etherscan
+- **Blockchain data**: Alchemy SDK (ETH/Base/Arbitrum), Helius (Solana), Etherscan
 - **AI**: Anthropic Claude API
 - **Deploy**: Vercel
 
@@ -32,10 +32,11 @@ Edit `.env.local` and fill in your keys:
 |----------|-----------------|-----------|
 | `ALCHEMY_API_KEY` | [dashboard.alchemy.com](https://dashboard.alchemy.com) | ✅ Yes |
 | `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com) | ✅ Yes |
-| `DEBANK_API_KEY` | [cloud.debank.com](https://cloud.debank.com) | Optional* |
+| `HELIUS_API_KEY` | [helius.dev](https://helius.dev) | Optional* |
 | `ETHERSCAN_API_KEY` | [etherscan.io/apis](https://etherscan.io/apis) | Optional* |
+| `COINGECKO_API_KEY` | [coingecko.com/en/api](https://www.coingecko.com/en/api/pricing) | Optional* |
 
-> *The app runs without DeBank/Etherscan — those providers have mock fallbacks. But DeBank is strongly recommended for accurate protocol detection.
+> *The app runs without these — Helius enables Solana analysis, Etherscan improves wallet-age detection, and a CoinGecko Pro key removes free-tier rate limits.
 
 ### 3. Run locally
 
@@ -53,8 +54,10 @@ Open [http://localhost:3000](http://localhost:3000)
 User → Next.js App Router
      → POST /api/analyze
        → Wallet Orchestrator
-         ├── Alchemy SDK (transactions, balances, ENS)
-         ├── DeBank API (protocols, portfolio)
+         ├── Alchemy SDK (ETH transactions, balances, ENS, NFTs)
+         ├── Helius API (Solana balances, transactions, NFTs)
+         ├── The Graph (Aave V3 + Uniswap V3 DeFi positions)
+         ├── CoinGecko (token prices, 30-day price history)
          └── Etherscan (wallet age fallback)
        → Classifiers (tags, sophistication, risk)
        → Claude API (narrative generation)
@@ -74,7 +77,9 @@ User → Next.js App Router
 │   ├── classifiers.ts              # Heuristic scoring
 │   ├── providers/
 │   │   ├── alchemy.ts
-│   │   ├── debank.ts
+│   │   ├── helius.ts
+│   │   ├── thegraph.ts
+│   │   ├── coingecko.ts
 │   │   └── etherscan.ts
 │   └── ai/
 │       └── narrator.ts             # Claude API integration
@@ -126,7 +131,9 @@ At 1,000 analyses/month:
 | Service | Cost |
 |---------|------|
 | Alchemy (free tier) | $0 |
-| DeBank API | ~$20 |
+| Helius (free tier) | $0 |
+| The Graph (hosted service) | $0 |
+| CoinGecko (free tier) | $0 |
 | Anthropic Claude Sonnet | ~$9 |
 | Vercel (hobby) | $0 |
-| **Total** | **~$29/mo** |
+| **Total** | **~$9/mo** |

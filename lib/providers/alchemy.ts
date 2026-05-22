@@ -1,5 +1,5 @@
-import { Alchemy, Network, AssetTransfersCategory, SortingOrder } from "alchemy-sdk";
-import type { TokenBalance, Transaction, SupportedChain } from "../types";
+import { Alchemy, Network, AssetTransfersCategory, SortingOrder, NftFilters } from "alchemy-sdk";
+import type { TokenBalance, Transaction, SupportedChain, NftSummary, NftCollection } from "../types";
 
 const STABLECOIN_SYMBOLS = new Set([
   "USDC", "USDT", "DAI", "BUSD", "FRAX", "LUSD", "USDB",
@@ -13,18 +13,17 @@ function makeClient(network: Network): Alchemy {
   });
 }
 
-const clients: Record<SupportedChain, Alchemy> = {
+const clients: Record<Exclude<SupportedChain, "solana">, Alchemy> = {
   ethereum: makeClient(Network.ETH_MAINNET),
   base:     makeClient(Network.BASE_MAINNET),
   arbitrum: makeClient(Network.ARB_MAINNET),
-  solana:   makeClient(Network.ETH_MAINNET), // placeholder — not yet supported
 };
 
 // ─── Token Balances ──────────────────────────────────────────────────────────
 
 export async function getTokenBalances(
   address: string,
-  chain: SupportedChain = "ethereum"
+  chain: Exclude<SupportedChain, "solana"> = "ethereum"
 ): Promise<TokenBalance[]> {
   const client = clients[chain];
 
@@ -55,7 +54,7 @@ export async function getTokenBalances(
         symbol,
         name: m.name ?? symbol,
         balance,
-        usdValue: 0, // enriched later via coingecko or debank
+        usdValue: 0, // enriched later via CoinGecko
         contractAddress: token.contractAddress,
         isStablecoin: STABLECOIN_SYMBOLS.has(symbol.toUpperCase()),
       });
@@ -72,7 +71,7 @@ export async function getTokenBalances(
 
 export async function getTransactionHistory(
   address: string,
-  chain: SupportedChain = "ethereum",
+  chain: Exclude<SupportedChain, "solana"> = "ethereum",
   maxCount = 100
 ): Promise<Transaction[]> {
   const client = clients[chain];
@@ -167,13 +166,58 @@ export async function resolveENSName(name: string): Promise<string | null> {
 /** Returns the native token balance (ETH, etc.) in human-readable units. */
 export async function getNativeBalance(
   address: string,
-  chain: SupportedChain = "ethereum"
+  chain: Exclude<SupportedChain, "solana"> = "ethereum"
 ): Promise<number> {
   try {
     const balanceWei = await clients[chain].core.getBalance(address);
     return Number(balanceWei) / 1e18;
   } catch {
     return 0;
+  }
+}
+
+// ─── NFT Holdings ────────────────────────────────────────────────────────────
+
+export async function getNFTs(address: string): Promise<NftSummary> {
+  const client = clients["ethereum"];
+  try {
+    const response = await client.nft.getNftsForOwner(address, {
+      pageSize: 100,
+      excludeFilters: [NftFilters.SPAM],
+    });
+
+    const collectionMap = new Map<string, NftCollection>();
+
+    for (const nft of response.ownedNfts) {
+      const addr = nft.contract.address.toLowerCase();
+      const tokenType = nft.tokenType === "ERC1155" ? "ERC1155" as const : "ERC721" as const;
+      const qty = nft.tokenType === "ERC1155" ? parseInt(nft.balance ?? "1", 10) : 1;
+
+      if (!collectionMap.has(addr)) {
+        collectionMap.set(addr, {
+          contractAddress: addr,
+          name: nft.contract.name ?? nft.contract.symbol ?? "Unknown Collection",
+          count: 0,
+          sampleImageUrl: nft.image?.thumbnailUrl ?? nft.image?.cachedUrl,
+          tokenType,
+        });
+      }
+
+      const col = collectionMap.get(addr)!;
+      col.count += qty;
+      if (!col.sampleImageUrl) {
+        col.sampleImageUrl = nft.image?.thumbnailUrl ?? nft.image?.cachedUrl;
+      }
+    }
+
+    const collections = Array.from(collectionMap.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
+
+    return { totalCount: response.totalCount, collections };
+  } catch (err) {
+    console.error("[alchemy] getNFTs error:", err);
+    return { totalCount: 0, collections: [] };
   }
 }
 

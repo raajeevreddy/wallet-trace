@@ -73,7 +73,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const address = body.address.trim().toLowerCase();
+  const raw = body.address.trim();
+  // Ethereum addresses are case-insensitive hex; Solana addresses are case-sensitive base58
+  const address = raw.startsWith("0x") ? raw.toLowerCase() : raw;
 
   if (!address) {
     return NextResponse.json<AnalysisError>(
@@ -85,7 +87,7 @@ export async function POST(req: NextRequest) {
   if (!isValidAddress(address)) {
     return NextResponse.json<AnalysisError>(
       {
-        error: "Invalid Ethereum address. Must be a 0x-prefixed 42-character hex string.",
+        error: "Invalid address. Must be an Ethereum address (0x…) or a Solana address.",
         code: "INVALID_ADDRESS",
       },
       { status: 400 }

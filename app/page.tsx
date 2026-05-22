@@ -13,10 +13,16 @@ const EXAMPLE_WALLETS = [
   { label: "Vitalik.eth", address: "vitalik.eth" },
   { label: "Aave Treasury", address: "0x25F2226B597E8F9514B3F68F00f494cF4f286491" },
   { label: "DeFi Whale", address: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE" },
+  { label: "Raydium ◎", address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" },
+  { label: "Sol Whale ◎", address: "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW" },
 ];
 
 function looksLikeENS(input: string): boolean {
   return input.includes(".") && !input.startsWith("0x");
+}
+
+function looksLikeSolana(input: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(input);
 }
 
 export default function HomePage() {
@@ -55,8 +61,14 @@ export default function HomePage() {
       }
     }
 
+    if (looksLikeSolana(trimmed)) {
+      setLoadingMsg("Analyzing…");
+      router.push(`/analysis/${trimmed}`);
+      return;
+    }
+
     if (!/^0x[a-fA-F0-9]{40}$/.test(trimmed)) {
-      setError("Enter a valid Ethereum address (0x…) or ENS name");
+      setError("Enter a valid Ethereum address (0x…), ENS name, or Solana address");
       setLoading(false);
       return;
     }
@@ -125,7 +137,7 @@ export default function HomePage() {
           maxWidth: 440, lineHeight: 1.65, margin: "0 auto",
           fontWeight: 300,
         }}>
-          Paste any Ethereum wallet address or ENS name.<br />
+          Paste any Ethereum or Solana wallet address.<br />
           <span style={{ color: "var(--green)", fontWeight: 400 }}>Institutional-grade AI analysis</span> in seconds.
         </p>
 
@@ -164,7 +176,7 @@ export default function HomePage() {
             color: "var(--text-3)", textTransform: "uppercase",
             letterSpacing: "0.10em", marginBottom: 10,
           }}>
-            Wallet Address or ENS Name
+            Ethereum · Solana · ENS
           </label>
 
           <div className="home-input-row" style={{ display: "flex", gap: 8, marginBottom: 8 }}>
@@ -174,7 +186,7 @@ export default function HomePage() {
               onChange={(e) => { setAddress(e.target.value); setError(""); }}
               onFocus={() => setInputFocused(true)}
               onBlur={() => setInputFocused(false)}
-              placeholder="0x… or vitalik.eth"
+              placeholder="0x…, vitalik.eth, or Solana address"
               spellCheck={false}
               style={{
                 flex: 1,
@@ -290,7 +302,7 @@ export default function HomePage() {
 
       {/* ── Footer caption ────────────────────────────────────────────────────── */}
       <p style={{ marginTop: 28, fontSize: 12, color: "var(--text-3)", textAlign: "center" }}>
-        Powered by Alchemy · Claude AI · CoinGecko
+        Powered by Alchemy · Helius · Claude AI · CoinGecko
       </p>
     </main>
   );

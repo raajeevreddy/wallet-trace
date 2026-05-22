@@ -30,6 +30,7 @@ export default function WalletHeader({ profile, narrative }: Props) {
 
   return (
     <div
+      className="wallet-header-inner"
       style={{
         background: "var(--surface)",
         border: "0.5px solid var(--border-strong)",
@@ -118,7 +119,7 @@ export default function WalletHeader({ profile, narrative }: Props) {
       </div>
 
       {/* Right: sophistication score */}
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
+      <div className="wallet-header-score" style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{ fontSize: 11, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>
           Sophistication
         </div>

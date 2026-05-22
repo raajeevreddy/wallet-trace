@@ -100,6 +100,47 @@ export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number
   }
 }
 
+// ─── Price History ────────────────────────────────────────────────────────────
+
+/**
+ * Fetch daily price history for a native coin over the last `days` days.
+ * Returns an array of { timestamp (ms), price } pairs.
+ */
+export async function fetchPriceHistory(
+  coinId: string,
+  days = 30
+): Promise<{ timestamp: number; price: number }[]> {
+  const apiKey = process.env.COINGECKO_API_KEY;
+  const baseUrl = apiKey ? "https://pro-api.coingecko.com/api/v3" : BASE_URL;
+  const headers: Record<string, string> = { accept: "application/json" };
+  if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/coins/${encodeURIComponent(coinId)}/market_chart?vs_currency=usd&days=${days}&interval=daily`,
+      { headers, signal: controller.signal }
+    );
+    if (!res.ok) {
+      console.warn(`[coingecko] Price history API responded ${res.status}`);
+      return [];
+    }
+    const data = (await res.json()) as { prices?: [number, number][] };
+    return (data.prices ?? []).map(([ts, price]) => ({ timestamp: ts, price }));
+  } catch (err) {
+    if ((err as Error).name === "AbortError") {
+      console.warn("[coingecko] Price history fetch timed out");
+    } else {
+      console.error("[coingecko] fetchPriceHistory error:", err);
+    }
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // ─── Token Enrichment ─────────────────────────────────────────────────────────
 
 /**

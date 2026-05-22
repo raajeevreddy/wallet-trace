@@ -29,10 +29,7 @@ export interface DebankProtocol {
 export async function getProtocolList(
   address: string
 ): Promise<ProtocolInteraction[]> {
-  if (!process.env.DEBANK_API_KEY) {
-    console.warn("[debank] No API key — returning mock protocol data");
-    return getMockProtocols();
-  }
+  if (!process.env.DEBANK_API_KEY) return [];
 
   try {
     const { data } = await axios.get<DebankProtocol[]>(
@@ -52,7 +49,7 @@ export async function getProtocolList(
     }));
   } catch (err) {
     console.error("[debank] getProtocolList error:", err);
-    return getMockProtocols();
+    return [];
   }
 }
 
@@ -102,7 +99,10 @@ export async function getTotalBalance(
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+// DeBank is optional — the app runs fully without it. Net worth and chain
+// activity are derived from Alchemy + CoinGecko when no key is set.
+// ─────────────────────────────────────────────────────────────────────────────
 
 function chainIdToSupported(id: string): SupportedChain | undefined {
   const map: Record<string, SupportedChain> = {
@@ -125,15 +125,3 @@ function inferProtocolCategory(name: string): ProtocolInteraction["category"] {
   return "other";
 }
 
-// ─── Mock fallback (no API key) ───────────────────────────────────────────────
-
-function getMockProtocols(): ProtocolInteraction[] {
-  return [
-    { protocol: "Aave V3", category: "lending", interactionCount: 47, chains: ["ethereum", "base"] },
-    { protocol: "Uniswap V3", category: "dex", interactionCount: 31, chains: ["ethereum", "arbitrum"] },
-    { protocol: "Pendle", category: "yield", interactionCount: 24, chains: ["ethereum"] },
-    { protocol: "MakerDAO", category: "lending", interactionCount: 18, chains: ["ethereum"] },
-    { protocol: "Hop Bridge", category: "bridge", interactionCount: 11, chains: ["ethereum", "base", "arbitrum"] },
-    { protocol: "Lido", category: "staking", interactionCount: 8, chains: ["ethereum"] },
-  ];
-}

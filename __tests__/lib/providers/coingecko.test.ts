@@ -1,4 +1,4 @@
-import { fetchTokenPrices, enrichTokenPrices, fetchNativeTokenPrice } from "../../../lib/providers/coingecko";
+import { fetchTokenPrices, enrichTokenPrices, fetchNativeTokenPrice, fetchPriceHistory } from "../../../lib/providers/coingecko";
 import type { TokenBalance } from "../../../lib/types";
 
 const mockFetch = jest.fn();
@@ -284,5 +284,76 @@ describe("enrichTokenPrices", () => {
     mockOkResponse({});
     await enrichTokenPrices(tokens);
     expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+});
+
+// ─── fetchPriceHistory ───────────────────────────────────────────────────────
+
+describe("fetchPriceHistory", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    delete process.env.COINGECKO_API_KEY;
+  });
+
+  function mockHistoryOk(prices: [number, number][]) {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({ prices }),
+    });
+  }
+
+  it("returns mapped price points from response", async () => {
+    const now = Date.now();
+    mockHistoryOk([
+      [now - 2 * 86_400_000, 3000],
+      [now - 86_400_000, 3100],
+      [now, 3200],
+    ]);
+    const result = await fetchPriceHistory("ethereum");
+    expect(result).toHaveLength(3);
+    expect(result[0]).toEqual({ timestamp: now - 2 * 86_400_000, price: 3000 });
+    expect(result[2]).toEqual({ timestamp: now, price: 3200 });
+  });
+
+  it("calls the market_chart endpoint with correct params", async () => {
+    mockHistoryOk([]);
+    await fetchPriceHistory("solana", 30);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/coins/solana/market_chart?vs_currency=usd&days=30&interval=daily"),
+      expect.any(Object)
+    );
+  });
+
+  it("returns empty array on non-ok HTTP response", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 429 });
+    const result = await fetchPriceHistory("ethereum");
+    expect(result).toEqual([]);
+  });
+
+  it("returns empty array when prices field is missing", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: jest.fn().mockResolvedValue({}),
+    });
+    const result = await fetchPriceHistory("ethereum");
+    expect(result).toEqual([]);
+  });
+
+  it("returns empty array on network error", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("network"));
+    const result = await fetchPriceHistory("ethereum");
+    expect(result).toEqual([]);
+  });
+
+  it("uses pro API URL when COINGECKO_API_KEY is set", async () => {
+    process.env.COINGECKO_API_KEY = "pro-key";
+    mockHistoryOk([]);
+    await fetchPriceHistory("ethereum");
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("pro-api.coingecko.com"),
+      expect.objectContaining({
+        headers: expect.objectContaining({ "x-cg-pro-api-key": "pro-key" }),
+      })
+    );
   });
 });

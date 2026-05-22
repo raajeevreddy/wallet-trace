@@ -1,4 +1,4 @@
-import { isValidAddress, buildWalletProfile } from "../../lib/orchestrator";
+import { isValidAddress, isValidSolanaAddress, buildWalletProfile } from "../../lib/orchestrator";
 import { mockProfile } from "../fixtures";
 
 // ─── Mock all providers ───────────────────────────────────────────────────────
@@ -9,6 +9,14 @@ jest.mock("../../lib/providers/alchemy", () => ({
   getWalletAge: jest.fn().mockResolvedValue({ firstTxTimestamp: 1438214400, walletAgeYears: 9 }),
   resolveENS: jest.fn().mockResolvedValue("vitalik.eth"),
   getNativeBalance: jest.fn().mockResolvedValue(0),
+  getNFTs: jest.fn().mockResolvedValue({ totalCount: 0, collections: [] }),
+}));
+
+jest.mock("../../lib/providers/helius", () => ({
+  getSolanaBalances: jest.fn().mockResolvedValue({ nativeLamports: 0, tokens: [] }),
+  getSolanaTransactions: jest.fn().mockResolvedValue([]),
+  getSolanaNFTs: jest.fn().mockResolvedValue({ totalCount: 0, collections: [] }),
+  getSolanaWalletAge: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock("../../lib/providers/debank", () => ({
@@ -23,18 +31,62 @@ jest.mock("../../lib/providers/etherscan", () => ({
 jest.mock("../../lib/providers/coingecko", () => ({
   enrichTokenPrices: jest.fn().mockImplementation((tokens) => Promise.resolve(tokens)),
   fetchNativeTokenPrice: jest.fn().mockResolvedValue(0),
+  fetchPriceHistory: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock("../../lib/providers/thegraph", () => ({
+  getTheGraphDeFiPositions: jest.fn().mockResolvedValue({
+    positions: [], totalSuppliedUsd: 0, totalBorrowedUsd: 0, totalLpUsd: 0,
+  }),
 }));
 
 const mockAlchemy = require("../../lib/providers/alchemy");
 const mockDebank = require("../../lib/providers/debank");
 const mockEtherscan = require("../../lib/providers/etherscan");
 const mockCoingecko = require("../../lib/providers/coingecko");
+const mockHelius = require("../../lib/providers/helius");
+const mockTheGraph = require("../../lib/providers/thegraph");
 
 const VALID_ADDRESS = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+
+const SOLANA_ADDRESS = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU";
+
+// ─── isValidSolanaAddress ─────────────────────────────────────────────────────
+
+describe("isValidSolanaAddress", () => {
+  it("accepts a valid base58 Solana address", () => {
+    expect(isValidSolanaAddress(SOLANA_ADDRESS)).toBe(true);
+  });
+
+  it("accepts a 32-character Solana address", () => {
+    expect(isValidSolanaAddress("11111111111111111111111111111112")).toBe(true);
+  });
+
+  it("rejects an Ethereum address", () => {
+    expect(isValidSolanaAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")).toBe(false);
+  });
+
+  it("rejects a string with invalid base58 characters (0, O, I, l)", () => {
+    expect(isValidSolanaAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa960")).toBe(false);
+    expect(isValidSolanaAddress("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")).toBe(false);
+  });
+
+  it("rejects strings that are too short", () => {
+    expect(isValidSolanaAddress("abc12")).toBe(false);
+  });
+
+  it("rejects strings that are too long", () => {
+    expect(isValidSolanaAddress("A".repeat(45))).toBe(false);
+  });
+});
 
 // ─── isValidAddress ───────────────────────────────────────────────────────────
 
 describe("isValidAddress", () => {
+  it("accepts a valid Solana address", () => {
+    expect(isValidAddress(SOLANA_ADDRESS)).toBe(true);
+  });
+
   it("accepts a valid lowercase 0x address", () => {
     expect(isValidAddress("0xd8da6bf26964af9d7eed9e03e53415d37aa96045")).toBe(true);
   });
@@ -86,16 +138,46 @@ describe("buildWalletProfile", () => {
     mockAlchemy.getTokenBalances.mockResolvedValue([]);
     mockAlchemy.getTransactionHistory.mockResolvedValue([]);
     mockAlchemy.getNativeBalance.mockResolvedValue(0);
+    mockAlchemy.getNFTs.mockResolvedValue({ totalCount: 0, collections: [] });
+    mockHelius.getSolanaBalances.mockResolvedValue({ nativeLamports: 0, tokens: [] });
+    mockHelius.getSolanaTransactions.mockResolvedValue([]);
+    mockHelius.getSolanaNFTs.mockResolvedValue({ totalCount: 0, collections: [] });
+    mockHelius.getSolanaWalletAge.mockResolvedValue(null);
     mockDebank.getProtocolList.mockResolvedValue([]);
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 0, chains: [] });
     mockEtherscan.getFirstTransactionTimestamp.mockResolvedValue(null);
     mockCoingecko.enrichTokenPrices.mockImplementation((tokens: unknown) => Promise.resolve(tokens));
     mockCoingecko.fetchNativeTokenPrice.mockResolvedValue(0);
+    mockCoingecko.fetchPriceHistory.mockResolvedValue([]);
+    mockTheGraph.getTheGraphDeFiPositions.mockResolvedValue({
+      positions: [], totalSuppliedUsd: 0, totalBorrowedUsd: 0, totalLpUsd: 0,
+    });
   });
 
   it("returns a WalletProfile with correct address", async () => {
     const profile = await buildWalletProfile(VALID_ADDRESS);
     expect(profile.identity.address).toBe(VALID_ADDRESS);
+  });
+
+  it("routes Solana addresses to Helius without calling Alchemy providers", async () => {
+    mockHelius.getSolanaBalances.mockResolvedValueOnce({ nativeLamports: 2_000_000_000, tokens: [] });
+    mockCoingecko.fetchNativeTokenPrice.mockResolvedValueOnce(150);
+
+    const profile = await buildWalletProfile(SOLANA_ADDRESS);
+
+    expect(profile.identity.address).toBe(SOLANA_ADDRESS);
+    expect(profile.chains[0].chain).toBe("solana");
+    expect(mockAlchemy.getTokenBalances).not.toHaveBeenCalled();
+    expect(mockAlchemy.getTransactionHistory).not.toHaveBeenCalled();
+    expect(mockHelius.getSolanaBalances).toHaveBeenCalledWith(SOLANA_ADDRESS);
+  });
+
+  it("builds Solana net worth from SOL balance + price", async () => {
+    mockHelius.getSolanaBalances.mockResolvedValueOnce({ nativeLamports: 5_000_000_000, tokens: [] }); // 5 SOL
+    mockCoingecko.fetchNativeTokenPrice.mockResolvedValueOnce(200); // $200/SOL
+
+    const profile = await buildWalletProfile(SOLANA_ADDRESS);
+    expect(profile.netWorthUsd).toBe(1000); // 5 × $200
   });
 
   it("resolves ENS name from Alchemy", async () => {
@@ -117,7 +199,7 @@ describe("buildWalletProfile", () => {
     expect(profile.identity.walletAgeYears).toBe(7);
   });
 
-  it("uses DeBank netWorthUsd when it returns a positive value", async () => {
+  it("uses DeBank netWorthUsd when key is set and returns a positive value", async () => {
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 500_000, chains: [] });
     const profile = await buildWalletProfile(VALID_ADDRESS);
     expect(profile.netWorthUsd).toBe(500_000);
@@ -156,7 +238,7 @@ describe("buildWalletProfile", () => {
     expect(eth).toBeUndefined();
   });
 
-  it("includes native ETH value in netWorthUsd when DeBank returns 0", async () => {
+  it("sums token usdValues for netWorthUsd when no DeBank key is set", async () => {
     mockAlchemy.getNativeBalance.mockResolvedValue(10);
     mockCoingecko.fetchNativeTokenPrice.mockResolvedValue(3_000);
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 0, chains: [] });
@@ -165,7 +247,7 @@ describe("buildWalletProfile", () => {
     expect(profile.netWorthUsd).toBe(30_000);
   });
 
-  it("falls back to summing enriched token usdValues when DeBank returns 0", async () => {
+  it("sums enriched token usdValues including ERC-20s when no DeBank key is set", async () => {
     mockAlchemy.getNativeBalance.mockResolvedValue(10);
     mockCoingecko.fetchNativeTokenPrice.mockResolvedValue(3_000);
     const enrichedErc20 = [
@@ -180,14 +262,14 @@ describe("buildWalletProfile", () => {
     expect(profile.netWorthUsd).toBe(35_000);
   });
 
-  it("uses DeBank chains when provided", async () => {
+  it("uses DeBank chain breakdown when key is set", async () => {
     const chains = [{ chain: "ethereum" as const, txCount: 0, percentage: 100, netWorthUsd: 500_000 }];
     mockDebank.getTotalBalance.mockResolvedValue({ netWorthUsd: 500_000, chains });
     const profile = await buildWalletProfile(VALID_ADDRESS);
     expect(profile.chains).toEqual(chains);
   });
 
-  it("builds chain activity from transactions when DeBank chains are empty", async () => {
+  it("builds chain activity from Alchemy transactions when no DeBank key is set", async () => {
     mockAlchemy.getTransactionHistory
       .mockResolvedValueOnce([{ chain: "ethereum", hash: "0x1", timestamp: 1, from: "0xa", to: "0xb", value: "1" }])
       .mockResolvedValueOnce([{ chain: "base", hash: "0x2", timestamp: 2, from: "0xa", to: "0xb", value: "1" }])

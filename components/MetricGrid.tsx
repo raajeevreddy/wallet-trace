@@ -61,6 +61,7 @@ export default function MetricGrid({ profile }: Props) {
 
   return (
     <div
+      className="metric-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",

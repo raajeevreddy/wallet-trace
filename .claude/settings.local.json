@@ -23,7 +23,21 @@
       "Bash(curl -s -X POST https://wallet-trace.vercel.app/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"0xd8da6bf26964af9d7eed9e03e53415d37aa96045\"}')",
       "Bash(python3 -m json.tool)",
       "Bash(python3 -c ' *)",
-      "Bash(npx jest *)"
+      "Bash(npx jest *)",
+      "Bash(node -e \"const s = require\\('alchemy-sdk'\\); console.log\\(Object.keys\\(s\\).filter\\(k => k.toLowerCase\\(\\).includes\\('nft'\\)\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s -X POST http://localhost:3000/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\"}')",
+      "Bash(cat /tmp/walletrace-dev.log | grep \"Local\\\\|port\\\\|error\\\\|Error\" | head -20)",
+      "Bash(curl -s -X POST http://localhost:3001/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU\"}' -w '\\\\nHTTP_STATUS:%{http_code}')",
+      "Bash(curl -s -X POST http://localhost:3001/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"notanaddress\"}' -w '\\\\nHTTP_STATUS:%{http_code}')",
+      "Bash(wait)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:3000/api/analyze -X POST -H 'Content-Type: application/json' -d '{\"address\":\"GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ\"}')",
+      "Bash(env)",
+      "Bash(find /Users/rajeevvishaka -name \".env.local\" -maxdepth 5 2>/dev/null)",
+      "Bash(cp /Users/rajeevvishaka/Documents/Claude/Projects/raajeev-portfolio/.env.local /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/.env.local && echo \"copied\")"
     ]
   }
 }
