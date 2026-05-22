@@ -71,19 +71,25 @@ export default function AnalysisPage() {
   // ── Step 1: Resolve ENS names in URL param ────────────────────────────────
   useEffect(() => {
     if (!rawParam) return;
+    let cancelled = false;
     if (rawParam.includes(".")) {
       setStatusMsg("Resolving ENS…");
       fetch(`/api/ens?name=${encodeURIComponent(rawParam.toLowerCase())}`)
         .then((r) => r.json())
         .then((json) => {
+          if (cancelled) return;
           if (json.address) router.replace(`/analysis/${json.address}`);
           else { setError(`Could not resolve ENS name "${rawParam}"`); setLoading(false); }
         })
-        .catch(() => { setError("Failed to resolve ENS name."); setLoading(false); });
+        .catch(() => {
+          if (cancelled) return;
+          setError("Failed to resolve ENS name."); setLoading(false);
+        });
     } else {
       // Ethereum addresses are case-insensitive; Solana addresses are case-sensitive base58
       setAddress(rawParam.startsWith("0x") ? rawParam.toLowerCase() : rawParam);
     }
+    return () => { cancelled = true; };
   }, [rawParam, router]);
 
   // ── Step 2: Fetch analysis once we have a hex address ────────────────────
@@ -224,7 +230,7 @@ export default function AnalysisPage() {
             {/* Token holdings + Transaction timeline */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
               <TokenHoldings tokens={data.profile.tokens} netWorthUsd={data.profile.netWorthUsd} />
-              <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} />
+              <TransactionTimeline transactions={data.profile.recentTransactions} walletAddress={data.profile.identity.address} chain={data.profile.chains[0]?.chain ?? "ethereum"} />
             </div>
 
             <NftHoldings nfts={data.profile.nfts} />

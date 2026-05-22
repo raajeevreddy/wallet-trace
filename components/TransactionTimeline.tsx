@@ -3,6 +3,7 @@ import type { Transaction } from "@/lib/types";
 interface Props {
   transactions: Transaction[];
   walletAddress: string;
+  chain?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -22,13 +23,34 @@ function shortAddr(addr: string): string {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-function etherscanUrl(hash: string, chain: string): string {
+function explorerTxUrl(hash: string, chain: string): string {
   const explorers: Record<string, string> = {
     ethereum: "https://etherscan.io/tx/",
     base:     "https://basescan.org/tx/",
     arbitrum: "https://arbiscan.io/tx/",
+    solana:   "https://solscan.io/tx/",
   };
   return (explorers[chain] ?? "https://etherscan.io/tx/") + hash;
+}
+
+function explorerAddressUrl(address: string, chain: string): string {
+  if (chain === "solana") return `https://solscan.io/account/${address}`;
+  const explorers: Record<string, string> = {
+    ethereum: "https://etherscan.io/address/",
+    base:     "https://basescan.org/address/",
+    arbitrum: "https://arbiscan.io/address/",
+  };
+  return (explorers[chain] ?? "https://etherscan.io/address/") + address;
+}
+
+function explorerLabel(chain: string): string {
+  const labels: Record<string, string> = {
+    ethereum: "Etherscan",
+    base:     "Basescan",
+    arbitrum: "Arbiscan",
+    solana:   "Solscan",
+  };
+  return labels[chain] ?? "Explorer";
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -53,6 +75,7 @@ function TxRow({
 }: {
   tx: Transaction;
   walletAddress: string;
+  chain?: string;
 }) {
   const cat = CATEGORY_STYLE[tx.category ?? "other"] ?? CATEGORY_STYLE.other;
   const chain = CHAIN_BADGE[tx.chain] ?? { label: tx.chain.toUpperCase(), color: "#4A7A93" };
@@ -63,7 +86,7 @@ function TxRow({
 
   return (
     <a
-      href={etherscanUrl(tx.hash, tx.chain)}
+      href={explorerTxUrl(tx.hash, tx.chain)}
       target="_blank"
       rel="noopener noreferrer"
       style={{
@@ -134,7 +157,7 @@ function TxRow({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function TransactionTimeline({ transactions, walletAddress }: Props) {
+export default function TransactionTimeline({ transactions, walletAddress, chain = "ethereum" }: Props) {
   const sorted = [...transactions].sort((a, b) => b.timestamp - a.timestamp).slice(0, 20);
 
   return (
@@ -176,11 +199,11 @@ export default function TransactionTimeline({ transactions, walletAddress }: Pro
         <TxRow key={tx.hash} tx={tx} walletAddress={walletAddress} />
       ))}
 
-      {/* Etherscan link */}
+      {/* Explorer link */}
       {sorted.length > 0 && (
         <div style={{ marginTop: 12, textAlign: "center" }}>
           <a
-            href={`https://etherscan.io/address/${walletAddress}`}
+            href={explorerAddressUrl(walletAddress, chain)}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -189,7 +212,7 @@ export default function TransactionTimeline({ transactions, walletAddress }: Pro
               opacity: 0.8,
             }}
           >
-            View full history on Etherscan ↗
+            View full history on {explorerLabel(chain)} ↗
           </a>
         </div>
       )}

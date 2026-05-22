@@ -29,13 +29,10 @@ export async function fetchTokenPrices(
   const headers: Record<string, string> = { accept: "application/json" };
   if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
   try {
     const res = await fetch(
       `${baseUrl}/simple/token_price/${platform}?${params}`,
-      { headers, signal: controller.signal }
+      { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
 
     if (!res.ok) {
@@ -51,14 +48,12 @@ export async function fetchTokenPrices(
     }
     return prices;
   } catch (err) {
-    if ((err as Error).name === "AbortError") {
+    if ((err as Error).name === "TimeoutError") {
       console.warn("[coingecko] Price fetch timed out");
     } else {
       console.error("[coingecko] fetchTokenPrices error:", err);
     }
     return {};
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -74,13 +69,10 @@ export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number
   const headers: Record<string, string> = { accept: "application/json" };
   if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
   try {
     const res = await fetch(
       `${baseUrl}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd`,
-      { headers, signal: controller.signal }
+      { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
     if (!res.ok) {
       console.warn(`[coingecko] Native price API responded ${res.status}`);
@@ -89,14 +81,12 @@ export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number
     const data = (await res.json()) as Record<string, { usd?: number }>;
     return data[coinId]?.usd ?? 0;
   } catch (err) {
-    if ((err as Error).name === "AbortError") {
+    if ((err as Error).name === "TimeoutError") {
       console.warn("[coingecko] Native price fetch timed out");
     } else {
       console.error("[coingecko] fetchNativeTokenPrice error:", err);
     }
     return 0;
-  } finally {
-    clearTimeout(timer);
   }
 }
 
@@ -115,13 +105,10 @@ export async function fetchPriceHistory(
   const headers: Record<string, string> = { accept: "application/json" };
   if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
   try {
     const res = await fetch(
       `${baseUrl}/coins/${encodeURIComponent(coinId)}/market_chart?vs_currency=usd&days=${days}&interval=daily`,
-      { headers, signal: controller.signal }
+      { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
     if (!res.ok) {
       console.warn(`[coingecko] Price history API responded ${res.status}`);
@@ -130,14 +117,12 @@ export async function fetchPriceHistory(
     const data = (await res.json()) as { prices?: [number, number][] };
     return (data.prices ?? []).map(([ts, price]) => ({ timestamp: ts, price }));
   } catch (err) {
-    if ((err as Error).name === "AbortError") {
+    if ((err as Error).name === "TimeoutError") {
       console.warn("[coingecko] Price history fetch timed out");
     } else {
       console.error("[coingecko] fetchPriceHistory error:", err);
     }
     return [];
-  } finally {
-    clearTimeout(timer);
   }
 }
 

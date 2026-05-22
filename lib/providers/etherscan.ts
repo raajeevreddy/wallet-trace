@@ -5,23 +5,22 @@ const BASE_URL = "https://api.etherscan.io/api";
 export async function getFirstTransactionTimestamp(
   address: string
 ): Promise<{ firstTxTimestamp: number; walletAgeYears: number } | null> {
-  const apiKey = process.env.ETHERSCAN_API_KEY ?? "YourApiKeyToken";
+  const apiKey = process.env.ETHERSCAN_API_KEY;
 
   try {
-    const { data } = await axios.get(BASE_URL, {
-      params: {
-        module: "account",
-        action: "txlist",
-        address,
-        startblock: 0,
-        endblock: 99999999,
-        page: 1,
-        offset: 1,
-        sort: "asc",
-        apikey: apiKey,
-      },
-      timeout: 8_000,
-    });
+    const params: Record<string, unknown> = {
+      module: "account",
+      action: "txlist",
+      address,
+      startblock: 0,
+      endblock: 99999999,
+      page: 1,
+      offset: 1,
+      sort: "asc",
+    };
+    if (apiKey) params.apikey = apiKey;
+
+    const { data } = await axios.get(BASE_URL, { params, timeout: 8_000 });
 
     if (data.status !== "1" || !data.result?.length) return null;
 

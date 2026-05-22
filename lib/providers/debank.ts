@@ -11,7 +11,7 @@ const CHAIN_IDS: Record<SupportedChain, string> = {
 
 function headers() {
   return {
-    AccessKey: process.env.DEBANK_API_KEY!,
+    AccessKey: process.env.DEBANK_API_KEY ?? "",
     accept: "application/json",
   };
 }

@@ -105,9 +105,9 @@ describe("fetchTokenPrices", () => {
     expect(result).toEqual({});
   });
 
-  it("returns empty object on timeout (AbortError)", async () => {
+  it("returns empty object on timeout (TimeoutError)", async () => {
     mockFetch.mockRejectedValueOnce(
-      Object.assign(new Error("Aborted"), { name: "AbortError" })
+      Object.assign(new Error("The operation timed out"), { name: "TimeoutError" })
     );
     const result = await fetchTokenPrices([ADDR_USDC]);
     expect(result).toEqual({});

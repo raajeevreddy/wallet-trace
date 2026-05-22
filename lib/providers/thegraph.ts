@@ -10,12 +10,16 @@ const UNISWAP_V3_SUBGRAPH =
 
 // ─── Generic GraphQL Query ────────────────────────────────────────────────────
 
-async function querySubgraph<T>(url: string, query: string): Promise<T | null> {
+async function querySubgraph<T>(
+  url: string,
+  query: string,
+  variables?: Record<string, unknown>
+): Promise<T | null> {
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ query, variables }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
     if (!res.ok) {
@@ -52,14 +56,15 @@ interface AaveUserReserves {
 async function getAavePositions(address: string): Promise<DeFiPosition[]> {
   const data = await querySubgraph<AaveUserReserves>(
     AAVE_V3_SUBGRAPH,
-    `{
-      userReserves(where: { user: "${address}" }, first: 50) {
+    `query($user: String!) {
+      userReserves(where: { user: $user }, first: 50) {
         currentATokenBalance
         currentVariableDebt
         currentStableDebt
         reserve { symbol decimals priceInUSD }
       }
-    }`
+    }`,
+    { user: address.toLowerCase() }
   );
 
   if (!data?.userReserves) return [];
@@ -115,8 +120,8 @@ interface UniswapPositionsData {
 async function getUniswapPositions(address: string): Promise<DeFiPosition[]> {
   const data = await querySubgraph<UniswapPositionsData>(
     UNISWAP_V3_SUBGRAPH,
-    `{
-      positions(where: { owner: "${address}", liquidity_gt: "0" }, first: 20) {
+    `query($owner: String!) {
+      positions(where: { owner: $owner, liquidity_gt: "0" }, first: 20) {
         id
         token0 { symbol }
         token1 { symbol }
@@ -126,7 +131,8 @@ async function getUniswapPositions(address: string): Promise<DeFiPosition[]> {
         withdrawnToken1
         pool { token0Price }
       }
-    }`
+    }`,
+    { owner: address.toLowerCase() }
   );
 
   if (!data?.positions) return [];
