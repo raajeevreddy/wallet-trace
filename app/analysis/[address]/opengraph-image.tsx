@@ -85,7 +85,7 @@ export default function WalletOGImage({ params }: { params: { address: string } 
                 fontSize: 34, fontWeight: 800, color: "#D9F0F7",
                 letterSpacing: "-0.02em",
               }}>
-                WalletIQ
+                OnchainAI
               </span>
             </div>
 
@@ -150,7 +150,7 @@ export default function WalletOGImage({ params }: { params: { address: string } 
             </div>
 
             <span style={{ fontSize: 18, color: "#2E6880" }}>
-              walletiq.vercel.app
+              onchainai.vercel.app
             </span>
           </div>
 

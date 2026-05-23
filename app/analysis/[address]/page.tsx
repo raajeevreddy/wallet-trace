@@ -257,7 +257,7 @@ export default function AnalysisPage() {
             fontFamily: "var(--font-display)", fontSize: 15,
             fontWeight: 700, color: "var(--text)", letterSpacing: "-0.02em",
           }}>
-            WalletIQ
+            OnchainAI
           </span>
         </button>
 

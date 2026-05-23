@@ -1,8 +1,8 @@
-# WalletIQ
+# OnchainAI
 
 AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any Ethereum or Solana address — get token balances, DeFi positions, risk scoring, and a brutally honest AI personality profile.
 
-**Live:** [walletiq.vercel.app](https://walletiq.vercel.app)
+**Live:** [onchainai.vercel.app](https://onchainai.vercel.app)
 
 ---
 
