@@ -1,15 +1,73 @@
 import type { TokenBalance } from "../types";
 
 const BASE_URL = "https://api.coingecko.com/api/v3";
-const BATCH_SIZE = 50; // CoinGecko supports up to ~100 addresses, stay conservative
+const DEFILLAMA_URL = "https://coins.llama.fi";
+const BATCH_SIZE = 50;
 const TIMEOUT_MS = 10_000;
 
-// ─── Price Fetching ───────────────────────────────────────────────────────────
+// CoinGecko platform → DeFiLlama chain name
+const PLATFORM_TO_CHAIN: Record<string, string> = {
+  ethereum:           "ethereum",
+  solana:             "solana",
+  "arbitrum-one":     "arbitrum",
+  "optimistic-ethereum": "optimism",
+  "polygon-pos":      "polygon",
+  base:               "base",
+};
 
-/**
- * Fetch USD prices for a batch of contract addresses on a given platform.
- * Returns a map of lowercase contract address → USD price.
- */
+// ─── DeFiLlama ────────────────────────────────────────────────────────────────
+
+async function fetchTokenPricesFromDeFiLlama(
+  contractAddresses: string[],
+  platform: string
+): Promise<Record<string, number>> {
+  if (contractAddresses.length === 0) return {};
+  const chain = PLATFORM_TO_CHAIN[platform] ?? platform;
+  const coins = contractAddresses.map((a) => `${chain}:${a}`).join(",");
+
+  try {
+    const res = await fetch(`${DEFILLAMA_URL}/prices/current/${coins}`, {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    if (!res.ok) return {};
+
+    const data = (await res.json()) as {
+      coins: Record<string, { price?: number }>;
+    };
+
+    const prices: Record<string, number> = {};
+    for (const [key, val] of Object.entries(data.coins ?? {})) {
+      if (val.price !== undefined) {
+        // key is "chain:address" — extract the address part
+        const addr = key.split(":").slice(1).join(":").toLowerCase();
+        prices[addr] = val.price;
+      }
+    }
+    return prices;
+  } catch {
+    return {};
+  }
+}
+
+async function fetchNativePriceFromDeFiLlama(coinId: string): Promise<number> {
+  try {
+    const res = await fetch(
+      `${DEFILLAMA_URL}/prices/current/coingecko:${encodeURIComponent(coinId)}`,
+      { headers: { accept: "application/json" }, signal: AbortSignal.timeout(TIMEOUT_MS) }
+    );
+    if (!res.ok) return 0;
+    const data = (await res.json()) as {
+      coins: Record<string, { price?: number }>;
+    };
+    return data.coins[`coingecko:${coinId}`]?.price ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+// ─── Token Prices ─────────────────────────────────────────────────────────────
+
 export async function fetchTokenPrices(
   contractAddresses: string[],
   platform = "ethereum"
@@ -17,17 +75,16 @@ export async function fetchTokenPrices(
   if (contractAddresses.length === 0) return {};
 
   const apiKey = process.env.COINGECKO_API_KEY;
-  const baseUrl = apiKey
-    ? "https://pro-api.coingecko.com/api/v3"
-    : BASE_URL;
+  const baseUrl = apiKey ? "https://pro-api.coingecko.com/api/v3" : BASE_URL;
+  const headers: Record<string, string> = { accept: "application/json" };
+  if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
 
   const params = new URLSearchParams({
     contract_addresses: contractAddresses.join(","),
     vs_currencies: "usd",
   });
 
-  const headers: Record<string, string> = { accept: "application/json" };
-  if (apiKey) headers["x-cg-pro-api-key"] = apiKey;
+  let prices: Record<string, number> = {};
 
   try {
     const res = await fetch(
@@ -35,34 +92,30 @@ export async function fetchTokenPrices(
       { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
 
-    if (!res.ok) {
-      console.warn(`[coingecko] Price API responded ${res.status}`);
-      return {};
-    }
-
-    // Response shape: { "0xabc...": { usd: 1.23 }, ... }
-    const data = (await res.json()) as Record<string, { usd?: number }>;
-    const prices: Record<string, number> = {};
-    for (const [addr, val] of Object.entries(data)) {
-      if (val.usd !== undefined) prices[addr.toLowerCase()] = val.usd;
-    }
-    return prices;
-  } catch (err) {
-    if ((err as Error).name === "TimeoutError") {
-      console.warn("[coingecko] Price fetch timed out");
+    if (res.ok) {
+      const data = (await res.json()) as Record<string, { usd?: number }>;
+      for (const [addr, val] of Object.entries(data)) {
+        if (val.usd !== undefined) prices[addr.toLowerCase()] = val.usd;
+      }
     } else {
-      console.error("[coingecko] fetchTokenPrices error:", err);
+      console.warn(`[coingecko] Token price API ${res.status} — falling back to DeFiLlama`);
     }
-    return {};
+  } catch (err) {
+    console.warn("[coingecko] Token price fetch failed — falling back to DeFiLlama:", (err as Error).message);
   }
+
+  // Fill any missing prices from DeFiLlama
+  const missing = contractAddresses.filter((a) => prices[a.toLowerCase()] === undefined);
+  if (missing.length > 0) {
+    const fallback = await fetchTokenPricesFromDeFiLlama(missing, platform);
+    Object.assign(prices, fallback);
+  }
+
+  return prices;
 }
 
 // ─── Native Token Price ───────────────────────────────────────────────────────
 
-/**
- * Fetch the USD price of a native coin (e.g. "ethereum", "bitcoin").
- * Uses CoinGecko's /simple/price endpoint by coin ID (not contract address).
- */
 export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number> {
   const apiKey = process.env.COINGECKO_API_KEY;
   const baseUrl = apiKey ? "https://pro-api.coingecko.com/api/v3" : BASE_URL;
@@ -74,28 +127,23 @@ export async function fetchNativeTokenPrice(coinId = "ethereum"): Promise<number
       `${baseUrl}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd`,
       { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
-    if (!res.ok) {
-      console.warn(`[coingecko] Native price API responded ${res.status}`);
-      return 0;
-    }
-    const data = (await res.json()) as Record<string, { usd?: number }>;
-    return data[coinId]?.usd ?? 0;
-  } catch (err) {
-    if ((err as Error).name === "TimeoutError") {
-      console.warn("[coingecko] Native price fetch timed out");
+    if (res.ok) {
+      const data = (await res.json()) as Record<string, { usd?: number }>;
+      const price = data[coinId]?.usd;
+      if (price !== undefined && price > 0) return price;
     } else {
-      console.error("[coingecko] fetchNativeTokenPrice error:", err);
+      console.warn(`[coingecko] Native price API ${res.status} — falling back to DeFiLlama`);
     }
-    return 0;
+  } catch (err) {
+    console.warn("[coingecko] Native price fetch failed — falling back to DeFiLlama:", (err as Error).message);
   }
+
+  // DeFiLlama fallback
+  return fetchNativePriceFromDeFiLlama(coinId);
 }
 
 // ─── Price History ────────────────────────────────────────────────────────────
 
-/**
- * Fetch daily price history for a native coin over the last `days` days.
- * Returns an array of { timestamp (ms), price } pairs.
- */
 export async function fetchPriceHistory(
   coinId: string,
   days = 30
@@ -111,15 +159,13 @@ export async function fetchPriceHistory(
       { headers, signal: AbortSignal.timeout(TIMEOUT_MS) }
     );
     if (!res.ok) {
-      console.warn(`[coingecko] Price history API responded ${res.status}`);
+      console.warn(`[coingecko] Price history API ${res.status}`);
       return [];
     }
     const data = (await res.json()) as { prices?: [number, number][] };
     return (data.prices ?? []).map(([ts, price]) => ({ timestamp: ts, price }));
   } catch (err) {
-    if ((err as Error).name === "TimeoutError") {
-      console.warn("[coingecko] Price history fetch timed out");
-    } else {
+    if ((err as Error).name !== "TimeoutError") {
       console.error("[coingecko] fetchPriceHistory error:", err);
     }
     return [];
@@ -128,36 +174,26 @@ export async function fetchPriceHistory(
 
 // ─── Token Enrichment ─────────────────────────────────────────────────────────
 
-/**
- * Enriches a token list with real USD values from CoinGecko.
- * Skips tokens that already have a usdValue > 0.
- * Processes in batches to stay within API limits.
- */
 export async function enrichTokenPrices(
   tokens: TokenBalance[],
   platform = "ethereum"
 ): Promise<TokenBalance[]> {
-  // Only fetch prices for tokens that don't have one yet
   const needsPricing = tokens.filter((t) => t.usdValue === 0 && t.contractAddress);
-
   if (needsPricing.length === 0) return tokens;
 
-  // Batch the addresses
   const allPrices: Record<string, number> = {};
   for (let i = 0; i < needsPricing.length; i += BATCH_SIZE) {
     const batch = needsPricing
       .slice(i, i + BATCH_SIZE)
       .map((t) => t.contractAddress.toLowerCase());
-
     const prices = await fetchTokenPrices(batch, platform);
     Object.assign(allPrices, prices);
   }
 
-  // Merge prices back into token list
   return tokens.map((token) => {
-    if (token.usdValue > 0) return token; // already priced
+    if (token.usdValue > 0) return token;
     const price = allPrices[token.contractAddress.toLowerCase()];
-    if (price === undefined) return token; // no price found — leave as 0
+    if (price === undefined) return token;
     return { ...token, usdValue: token.balance * price };
   });
 }
