@@ -11,8 +11,8 @@ import {
 
 const EXAMPLE_WALLETS = [
   { label: "Vitalik.eth", address: "vitalik.eth" },
+  { label: "Coinbase", address: "0x503828976d22510aad0201ac7ec88293211d23da" },
   { label: "Aave Treasury", address: "0x25F2226B597E8F9514B3F68F00f494cF4f286491" },
-  { label: "Binance Hot", address: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE" },
   { label: "Eth Foundation", address: "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" },
   { label: "hayden.eth", address: "hayden.eth" },
 ];
