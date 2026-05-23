@@ -308,7 +308,7 @@ export default function HomePage() {
         fontSize: 12, color: "var(--text-3)", textAlign: "center",
         pointerEvents: "none",
       }}>
-        Powered by Alchemy · Helius · Claude AI · CoinGecko
+        Powered by Alchemy · Helius · Claude AI · CoinGecko · DeFiLlama
       </p>
     </main>
   );

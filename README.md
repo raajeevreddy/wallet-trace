@@ -28,7 +28,7 @@ AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any 
 | ETH data | Alchemy SDK — tokens, NFTs, transactions, ENS |
 | Solana data | Helius API — SPL tokens, transactions, NFTs |
 | DeFi positions | The Graph — Aave V3, Uniswap V3 subgraphs |
-| Prices | CoinGecko — spot prices + 30-day history |
+| Prices | CoinGecko — spot prices + 30-day history (DeFiLlama fallback) |
 | Wallet age | Etherscan — first transaction timestamp |
 | AI | Anthropic Claude Haiku (`claude-haiku-4-5-20251001`) |
 | OG images | Next.js `ImageResponse` (edge runtime) |
@@ -83,6 +83,7 @@ User → Next.js App Router
          ├── Helius API      (Solana tokens, NFTs, txns)
          ├── The Graph       (Aave V3 + Uniswap V3 positions)
          ├── CoinGecko       (prices, 30-day history)
+         ├── DeFiLlama       (price fallback)
          └── Etherscan       (wallet age fallback)
        → Classifiers         (tags, sophistication score, risk profile)
        → Claude Haiku API    (roast narrative) or roastLibrary fallback
@@ -192,6 +193,7 @@ At 1,000 analyses/month with 24h caching (real-world unique requests ~300/month)
 | Helius (free tier) | $0 |
 | The Graph (hosted) | $0 |
 | CoinGecko (free tier) | $0 |
+| DeFiLlama | $0 |
 | Anthropic Claude Haiku | ~$0.75 |
 | Vercel (hobby) | $0 |
 | **Total** | **~$0.75/mo** |
