@@ -232,46 +232,6 @@ export default function HomePage() {
           )}
         </form>
 
-        {/* ── Recent Searches ──────────────────────────────────────────────── */}
-        {recentWallets.length > 0 && (
-          <div style={{ marginTop: 22, paddingTop: 18, borderTop: "0.5px solid var(--border)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <span style={{ fontSize: 10, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
-                Recent
-              </span>
-              <button
-                onClick={handleClearRecent}
-                style={{ fontSize: 11, color: "var(--text-3)", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "var(--font-body)" }}
-              >
-                Clear
-              </button>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {recentWallets.map((w) => (
-                <button
-                  key={w.address}
-                  onClick={() => router.push(`/analysis/${w.address}`)}
-                  title={w.address}
-                  style={{
-                    fontSize: 12, padding: "5px 12px",
-                    background: "rgba(6,194,217,0.07)",
-                    border: "0.5px solid rgba(6,194,217,0.18)",
-                    borderRadius: 20, color: "var(--text-2)",
-                    cursor: "pointer", fontFamily: "var(--font-mono)",
-                    transition: "all 0.15s",
-                    display: "flex", alignItems: "center", gap: 5,
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.14)"; e.currentTarget.style.color = "var(--green)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(6,194,217,0.07)"; e.currentTarget.style.color = "var(--text-2)"; }}
-                >
-                  {w.ens ? (
-                    <><span style={{ color: "var(--green)", fontSize: 9 }}>◆</span>{w.ens}</>
-                  ) : shortAddress(w.address)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ── Examples ─────────────────────────────────────────────────────── */}
         <div style={{ marginTop: 20 }}>
