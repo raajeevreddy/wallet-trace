@@ -20,9 +20,10 @@ import DashboardSkeleton from "@/components/DashboardSkeleton";
 
 // ─── Nav Search ───────────────────────────────────────────────────────────────
 
-function NavSearch() {
+function NavSearch({ current }: { current?: string }) {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [focused, setFocused] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,6 +32,8 @@ function NavSearch() {
     router.push(`/analysis/${encodeURIComponent(q)}`);
     setValue("");
   }
+
+  const placeholder = !focused && current ? current : "Search address or ENS…";
 
   return (
     <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: 420, margin: "0 16px" }}>
@@ -46,7 +49,7 @@ function NavSearch() {
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Search address or ENS…"
+          placeholder={placeholder}
           style={{
             width: "100%", boxSizing: "border-box",
             background: "rgba(255,255,255,0.04)",
@@ -56,8 +59,8 @@ function NavSearch() {
             fontFamily: "var(--font-mono)",
             outline: "none", transition: "border-color 0.15s",
           }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(6,194,217,0.4)")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)")}
+          onFocus={(e) => { setFocused(true); e.currentTarget.style.borderColor = "rgba(6,194,217,0.4)"; }}
+          onBlur={(e) => { setFocused(false); e.currentTarget.style.borderColor = "rgba(255,255,255,0.10)"; }}
         />
       </div>
     </form>
@@ -175,14 +178,15 @@ export default function AnalysisPage() {
   useEffect(() => {
     if (!rawParam) return;
     let cancelled = false;
-    if (rawParam.includes(".")) {
+    const decoded = decodeURIComponent(rawParam);
+    if (decoded.includes(".")) {
       setStatusMsg("Resolving ENS…");
-      fetch(`/api/ens?name=${encodeURIComponent(rawParam.toLowerCase())}`)
+      fetch(`/api/ens?name=${encodeURIComponent(decoded.toLowerCase())}`)
         .then((r) => r.json())
         .then((json) => {
           if (cancelled) return;
-          if (json.address) router.replace(`/analysis/${json.address}`);
-          else { setError(`Could not resolve ENS name "${rawParam}"`); setLoading(false); }
+          if (json.address) setAddress(json.address.toLowerCase());
+          else { setError(`Could not resolve ENS name "${decoded}"`); setLoading(false); }
         })
         .catch(() => {
           if (cancelled) return;
@@ -193,7 +197,7 @@ export default function AnalysisPage() {
       setAddress(rawParam.startsWith("0x") ? rawParam.toLowerCase() : rawParam);
     }
     return () => { cancelled = true; };
-  }, [rawParam, router]);
+  }, [rawParam]);
 
   // ── Step 2: Fetch analysis once we have a hex address ────────────────────
   const fetchAnalysis = useCallback(async (addr: string) => {

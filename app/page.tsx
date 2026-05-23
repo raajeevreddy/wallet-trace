@@ -12,9 +12,9 @@ import {
 const EXAMPLE_WALLETS = [
   { label: "Vitalik.eth", address: "vitalik.eth" },
   { label: "Aave Treasury", address: "0x25F2226B597E8F9514B3F68F00f494cF4f286491" },
-  { label: "DeFi Whale", address: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE" },
-  { label: "Raydium ◎", address: "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" },
-  { label: "Sol Whale ◎", address: "GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW" },
+  { label: "Binance Hot", address: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE" },
+  { label: "Eth Foundation", address: "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe" },
+  { label: "hayden.eth", address: "hayden.eth" },
 ];
 
 function looksLikeENS(input: string): boolean {
@@ -52,7 +52,7 @@ export default function HomePage() {
         const res = await fetch(`/api/ens?name=${encodeURIComponent(trimmed.toLowerCase())}`);
         const json = await res.json();
         if (!res.ok || !json.address) { setError(json.error ?? `Could not resolve "${trimmed}"`); setLoading(false); return; }
-        router.push(`/analysis/${json.address}`);
+        router.push(`/analysis/${encodeURIComponent(trimmed.toLowerCase())}`);
         return;
       } catch {
         setError("Network error resolving ENS name. Please try again.");
