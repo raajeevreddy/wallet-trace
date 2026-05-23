@@ -133,14 +133,11 @@ export default function NftHoldings({ nfts }: Props) {
         justifyContent: "space-between",
         marginBottom: 16,
       }}>
-        <div style={{
-          fontSize: 11,
-          fontWeight: 500,
-          color: "var(--text-3)",
-          textTransform: "uppercase",
-          letterSpacing: "0.07em",
-        }}>
-          NFT Holdings
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 14, borderRadius: 2, background: "rgba(153,69,255,0.7)" }} />
+          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
+            NFT Holdings
+          </div>
         </div>
         <div style={{ fontSize: 11, color: "var(--text-3)" }}>
           {nfts.totalCount} item{nfts.totalCount !== 1 ? "s" : ""}

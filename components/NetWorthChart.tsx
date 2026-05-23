@@ -46,16 +46,19 @@ export default function NetWorthChart({ history, chain }: { history: PricePoint[
   return (
     <div style={{
       background: "linear-gradient(135deg, rgba(12,31,52,0.97) 0%, rgba(7,22,39,0.95) 100%)",
-      border: "0.5px solid var(--border)",
+      border: "0.5px solid var(--border-strong)",
       borderRadius: 16, padding: "22px 24px",
     }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
         <div>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", margin: 0 }}>
-            Portfolio Trend
-          </h3>
-          <p style={{ fontSize: 11, color: "var(--text-3)", margin: "2px 0 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--green)", opacity: 0.8 }} />
+            <h3 style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", margin: 0, textTransform: "uppercase", letterSpacing: "0.10em" }}>
+              Portfolio Trend
+            </h3>
+          </div>
+          <p style={{ fontSize: 11, color: "var(--text-3)", margin: "0 0 0 11px" }}>
             30d · {nativeTicker} price × current holdings (approx.)
           </p>
         </div>

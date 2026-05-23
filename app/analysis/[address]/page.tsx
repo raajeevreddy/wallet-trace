@@ -304,7 +304,7 @@ export default function AnalysisPage() {
         )}
 
         {data && !loading && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             <WalletHeader profile={data.profile} narrative={data.narrative} />
             <MetricGrid profile={data.profile} />
             {/* Risk + AI insight at the top */}
@@ -315,7 +315,7 @@ export default function AnalysisPage() {
               history={data.profile.netWorthHistory}
               chain={data.profile.chains[0]?.chain ?? "ethereum"}
             />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }} className="grid-stack">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }} className="grid-stack">
               <ProtocolChart protocols={data.profile.protocols} />
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <StablecoinPanel stablecoins={data.profile.stablecoins} />

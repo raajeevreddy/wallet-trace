@@ -172,11 +172,11 @@ export default function TransactionTimeline({ transactions, walletAddress, chain
         display: "flex", alignItems: "center",
         justifyContent: "space-between", marginBottom: 4,
       }}>
-        <div style={{
-          fontSize: 11, fontWeight: 500, color: "var(--text-3)",
-          textTransform: "uppercase", letterSpacing: "0.07em",
-        }}>
-          Recent Transactions
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--amber)", opacity: 0.8 }} />
+          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
+            Recent Transactions
+          </div>
         </div>
         <div style={{ fontSize: 11, color: "var(--text-3)" }}>
           {sorted.length} shown

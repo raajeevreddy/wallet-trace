@@ -36,12 +36,11 @@ export default function ProtocolChart({ protocols }: Props) {
       borderRadius: 14,
       padding: "20px 24px",
     }}>
-      <div style={{
-        fontSize: 11, fontWeight: 500, color: "var(--text-3)",
-        textTransform: "uppercase", letterSpacing: "0.07em",
-        marginBottom: 16,
-      }}>
-        Protocol Activity
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <div style={{ width: 3, height: 14, borderRadius: 2, background: "rgba(6,194,217,0.7)" }} />
+        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
+          Protocol Activity
+        </div>
       </div>
 
       {data.length === 0 ? (

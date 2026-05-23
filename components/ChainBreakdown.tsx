@@ -35,12 +35,11 @@ export default function ChainBreakdown({ chains }: Props) {
       borderRadius: 14,
       padding: "20px 24px",
     }}>
-      <div style={{
-        fontSize: 11, fontWeight: 500, color: "var(--text-3)",
-        textTransform: "uppercase", letterSpacing: "0.07em",
-        marginBottom: 14,
-      }}>
-        Chain Distribution
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <div style={{ width: 3, height: 14, borderRadius: 2, background: "rgba(153,69,255,0.7)" }} />
+        <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.10em" }}>
+          Chain Distribution
+        </div>
       </div>
 
       {sorted.length === 0 ? (
