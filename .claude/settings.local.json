@@ -37,7 +37,29 @@
       "Bash(curl -s http://localhost:3000/api/analyze -X POST -H 'Content-Type: application/json' -d '{\"address\":\"GThUX1Atko4tqhN2NaiTazWSeFWMuiUvfFnyJyUghFMJ\"}')",
       "Bash(env)",
       "Bash(find /Users/rajeevvishaka -name \".env.local\" -maxdepth 5 2>/dev/null)",
-      "Bash(cp /Users/rajeevvishaka/Documents/Claude/Projects/raajeev-portfolio/.env.local /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/.env.local && echo \"copied\")"
+      "Bash(cp /Users/rajeevvishaka/Documents/Claude/Projects/raajeev-portfolio/.env.local /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/.env.local && echo \"copied\")",
+      "Bash(npx next *)",
+      "Bash(node_modules/.bin/next lint *)",
+      "Bash(npx eslint *)",
+      "Bash(lsof -ti:3000)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__computer",
+      "Bash(grep -n '\\\\${d\\\\.' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/lib/ai/roastLibrary.ts)",
+      "Bash(grep -n '\"[^\"]*\\\\${d\\\\.' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/lib/ai/roastLibrary.ts)",
+      "Bash(grep -n \"'\\\\\\([^']*\\\\\\)\\\\${d\\\\.\" /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/lib/ai/roastLibrary.ts)",
+      "Bash(npx playwright *)",
+      "Bash(PROD_URL=\"https://wallet-trace-raajeevreddys-projects.vercel.app\" *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); p=d.get\\('profile',{}\\); print\\('netWorth:', p.get\\('netWorthUsd'\\)\\); print\\('tokens:', [\\(t['symbol'], t['balance'], t['usdValue']\\) for t in p.get\\('tokens',[]\\)]\\); print\\('nativeLamports check - SOL token:', [\\(t['symbol'],t['balance'],t['usdValue']\\) for t in p.get\\('tokens',[]\\) if t['symbol']=='SOL']\\)\")",
+      "Bash(curl -v -X POST http://localhost:3000/api/analyze -H 'Content-Type: application/json' -d '{\"address\":\"GsbwXfJraMomNxBcjYLcG3mxkBUiyWXAB32fGbSMQRdW\"}')",
+      "Bash(sed -n '34,48p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/ProtocolChart.tsx)",
+      "Bash(sed -n '19,31p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/StablecoinPanel.tsx)",
+      "Bash(sed -n '33,44p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/ChainBreakdown.tsx)",
+      "Bash(sed -n '128,148p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/TokenHoldings.tsx)",
+      "Bash(sed -n '164,182p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/TransactionTimeline.tsx)",
+      "Bash(sed -n '120,145p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/NftHoldings.tsx)",
+      "Bash(sed -n '44,65p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/NetWorthChart.tsx)"
     ]
   }
 }

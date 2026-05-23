@@ -127,7 +127,7 @@ export default function HomePage() {
             color: "var(--text)",
             letterSpacing: "-0.03em",
           }}>
-            Wallet Trace
+            WalletScan
           </span>
         </div>
 

@@ -4,10 +4,10 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wallet Trace",
+  title: "WalletScan",
   description: "Institutional-grade AI analysis for any crypto wallet",
   openGraph: {
-    title: "Wallet Trace",
+    title: "WalletScan",
     description: "Turn blockchain data into plain English intelligence",
   },
 };

@@ -1,8 +1,8 @@
-# Wallet Trace
+# WalletScan
 
 AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any Ethereum or Solana address — get token balances, DeFi positions, risk scoring, and a brutally honest AI personality profile.
 
-**Live:** [walletrace.vercel.app](https://walletrace.vercel.app)
+**Live:** [walletscan.vercel.app](https://walletscan.vercel.app)
 
 ---
 

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Wallet Trace — AI Ethereum Wallet Analysis";
+export const alt = "WalletScan — AI Ethereum Wallet Analysis";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -59,7 +59,7 @@ export default function OGImage() {
             color: "#D9F0F7",
             letterSpacing: "-0.03em",
           }}>
-            Wallet Trace
+            WalletScan
           </span>
         </div>
 
@@ -91,7 +91,7 @@ export default function OGImage() {
           position: "absolute", bottom: 36,
           fontSize: 18, color: "#3C7A94", margin: 0,
         }}>
-          wallet-trace.vercel.app
+          walletscan.vercel.app
         </p>
       </div>
     ),

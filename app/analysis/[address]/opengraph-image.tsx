@@ -85,7 +85,7 @@ export default function WalletOGImage({ params }: { params: { address: string } 
                 fontSize: 34, fontWeight: 800, color: "#D9F0F7",
                 letterSpacing: "-0.02em",
               }}>
-                Wallet Trace
+                WalletScan
               </span>
             </div>
 
@@ -150,7 +150,7 @@ export default function WalletOGImage({ params }: { params: { address: string } 
             </div>
 
             <span style={{ fontSize: 18, color: "#2E6880" }}>
-              wallet-trace.vercel.app
+              walletscan.vercel.app
             </span>
           </div>
 
