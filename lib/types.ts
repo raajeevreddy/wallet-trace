@@ -196,6 +196,16 @@ export interface WalletProfile {
   analyzedAt: number; // unix ms
 }
 
+// ─── Wallet Comparison ────────────────────────────────────────────────────────
+
+export interface WalletComparisonAnalysis {
+  riskTolerance: string;
+  nftTaste: string;
+  defiBehavior: string;
+  chainPreferences: string;
+  verdict: string;
+}
+
 // ─── API Response ─────────────────────────────────────────────────────────────
 
 export interface AnalysisResponse {
