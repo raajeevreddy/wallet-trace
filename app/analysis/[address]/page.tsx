@@ -16,6 +16,7 @@ import AIInsightCard from "@/components/AIInsightCard";
 import NftHoldings from "@/components/NftHoldings";
 import DeFiPositions from "@/components/DeFiPositions";
 import NetWorthChart from "@/components/NetWorthChart";
+import TimeMachine from "@/components/TimeMachine";
 import DashboardSkeleton from "@/components/DashboardSkeleton";
 
 // ─── Nav Search ───────────────────────────────────────────────────────────────
@@ -310,6 +311,7 @@ export default function AnalysisPage() {
             {/* Risk + AI insight at the top */}
             <RiskTable risk={data.profile.risk} />
             <AIInsightCard narrative={data.narrative} />
+            <TimeMachine timeMachine={data.timeMachine} />
             {/* Net worth trend chart */}
             <NetWorthChart
               history={data.profile.netWorthHistory}

@@ -157,6 +157,25 @@ export interface AIAnalysis {
   isQuotaError?: boolean;
 }
 
+// ─── Time Machine ─────────────────────────────────────────────────────────────
+
+export interface TimeMachineAnalysis {
+  bestTrade: string;
+  worstTrade: string;
+  biggestRegret: string;
+  survivalInstincts: string;
+}
+
+// ─── Wallet Comparison ────────────────────────────────────────────────────────
+
+export interface WalletComparisonAnalysis {
+  riskTolerance: string;
+  nftTaste: string;
+  defiBehavior: string;
+  chainPreferences: string;
+  verdict: string; // who "wins" overall
+}
+
 // ─── Full Wallet Profile ─────────────────────────────────────────────────────
 
 export interface WalletProfile {
@@ -182,7 +201,15 @@ export interface WalletProfile {
 export interface AnalysisResponse {
   profile: WalletProfile;
   narrative: AIAnalysis;
+  timeMachine: TimeMachineAnalysis;
   cached: boolean;
+  analysisMs: number;
+}
+
+export interface CompareResponse {
+  wallet1: { profile: WalletProfile; narrative: AIAnalysis };
+  wallet2: { profile: WalletProfile; narrative: AIAnalysis };
+  comparison: WalletComparisonAnalysis;
   analysisMs: number;
 }
 
