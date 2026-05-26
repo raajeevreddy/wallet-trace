@@ -177,12 +177,29 @@ export interface WalletProfile {
   analyzedAt: number; // unix ms
 }
 
+// ─── Wallet Comparison ────────────────────────────────────────────────────────
+
+export interface WalletComparisonAnalysis {
+  riskTolerance: string;
+  nftTaste: string;
+  defiBehavior: string;
+  chainPreferences: string;
+  verdict: string;
+}
+
 // ─── API Response ─────────────────────────────────────────────────────────────
 
 export interface AnalysisResponse {
   profile: WalletProfile;
   narrative: AIAnalysis;
   cached: boolean;
+  analysisMs: number;
+}
+
+export interface CompareResponse {
+  wallet1: { profile: WalletProfile; narrative: AIAnalysis };
+  wallet2: { profile: WalletProfile; narrative: AIAnalysis };
+  comparison: WalletComparisonAnalysis;
   analysisMs: number;
 }
 

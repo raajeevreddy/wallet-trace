@@ -265,6 +265,23 @@ export default function AnalysisPage() {
         <NavSearch />
 
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <button
+            onClick={() => router.push(`/compare?addr1=${address ?? ""}`)}
+            title="Compare this wallet with another"
+            style={{
+              display: "flex", alignItems: "center", gap: 5,
+              fontSize: 12, color: "var(--text-3)",
+              background: "rgba(153,69,255,0.08)",
+              border: "0.5px solid rgba(153,69,255,0.25)",
+              borderRadius: 6, padding: "5px 12px",
+              cursor: "pointer", fontFamily: "var(--font-body)",
+              transition: "all 0.15s", whiteSpace: "nowrap",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(153,69,255,0.16)"; e.currentTarget.style.color = "#9945FF"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(153,69,255,0.08)"; e.currentTarget.style.color = "var(--text-3)"; }}
+          >
+            ⚔️ Compare
+          </button>
           {data && address && <TweetButton address={address} data={data} />}
           {data && address && <ShareButton address={address} />}
         </div>
