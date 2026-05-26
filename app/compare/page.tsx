@@ -119,6 +119,15 @@ export default function ComparePage() {
           </button>
         </form>
       </div>
+
+      {/* Footer */}
+      <p style={{
+        position: "absolute", bottom: 24, left: 0, right: 0,
+        fontSize: 12, color: "var(--text-3)", textAlign: "center",
+        pointerEvents: "none",
+      }}>
+        Powered by Alchemy · Helius · Claude AI · CoinGecko · DeFiLlama
+      </p>
     </main>
   );
 }

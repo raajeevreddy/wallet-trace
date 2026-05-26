@@ -1,6 +1,6 @@
 # OnchainAI
 
-AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any Ethereum or Solana address — get token balances, DeFi positions, risk scoring, and a brutally honest AI personality profile.
+AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any Ethereum or Solana address — get token balances, DeFi positions, risk scoring, a brutally honest AI personality profile, a time machine of your trading history, and head-to-head wallet comparisons.
 
 **Live:** [onchainai.vercel.app](https://onchainai.vercel.app)
 
@@ -12,10 +12,11 @@ AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any 
 - **Full portfolio** — token balances, DeFi positions (Aave, Uniswap), NFT holdings
 - **Risk scoring** — concentration, leverage, bridge exposure, smart contract risk
 - **AI roast** — Claude Haiku generates a savage-but-accurate wallet personality profile
+- **⏳ Wallet Time Machine** — AI narrates your best trade, worst trade, biggest regret, and survival instincts
+- **⚔️ Compare two wallets** — head-to-head breakdown of risk tolerance, NFT taste, DeFi behavior, chain preferences, and a verdict
 - **104 mock roasts** — data-driven fallback library across 8 archetypes when API is unavailable
 - **Share / Tweet** — one-click sharing with per-wallet OG images
 - **24h cache** — in-memory cache with 500-entry FIFO to minimize API costs
-- **Recent searches** — persisted in localStorage
 
 ---
 
@@ -75,7 +76,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ```
 User → Next.js App Router
-     → GET /api/ens?name=   (ENS resolution)
+     → GET  /api/ens?name=          (ENS resolution)
      → POST /api/analyze
        → 24h in-memory cache (500 entries FIFO)
        → Wallet Orchestrator
@@ -86,7 +87,10 @@ User → Next.js App Router
          ├── DeFiLlama       (price fallback)
          └── Etherscan       (wallet age fallback)
        → Classifiers         (tags, sophistication score, risk profile)
-       → Claude Haiku API    (roast narrative) or roastLibrary fallback
+       → Claude Haiku API    (roast + time machine) or fallback
+     → POST /api/compare
+       → Runs two wallet profiles in parallel
+       → Claude Haiku API    (head-to-head comparison narrative)
      → Dashboard UI
      → /analysis/[address]/opengraph-image (edge, per-wallet OG)
 ```
@@ -103,23 +107,28 @@ User → Next.js App Router
 │   │   └── [address]/
 │   │       ├── page.tsx                      # Wallet dashboard
 │   │       └── opengraph-image.tsx           # Per-wallet OG image (edge)
+│   ├── compare/
+│   │   ├── page.tsx                          # Compare entry — two address inputs
+│   │   └── [addr1]/[addr2]/page.tsx          # Compare results page
 │   └── api/
 │       ├── analyze/route.ts                  # Main analysis endpoint
+│       ├── compare/route.ts                  # Compare two wallets endpoint
 │       └── ens/route.ts                      # ENS → address resolution
 ├── lib/
 │   ├── types.ts                              # All TypeScript interfaces
 │   ├── orchestrator.ts                       # Data aggregation pipeline
 │   ├── classifiers.ts                        # Tag/risk/sophistication scoring
 │   ├── cache.ts                              # In-memory 24h / 500-entry cache
-│   ├── recentWallets.ts                      # localStorage recent searches
 │   ├── providers/
 │   │   ├── alchemy.ts                        # ETH tokens, NFTs, transactions
 │   │   ├── helius.ts                         # Solana tokens, NFTs, transactions
 │   │   ├── thegraph.ts                       # Aave V3 + Uniswap V3 positions
-│   │   ├── coingecko.ts                      # Prices + price history
+│   │   ├── coingecko.ts                      # Prices + price history (DeFiLlama fallback)
 │   │   └── etherscan.ts                      # Wallet age
 │   └── ai/
-│       ├── narrator.ts                       # Claude API + fallback routing
+│       ├── narrator.ts                       # Claude API roast + fallback routing
+│       ├── timeMachine.ts                    # Claude API time machine narrative
+│       ├── compareWallets.ts                 # Claude API head-to-head comparison
 │       └── roastLibrary.ts                   # 104 data-driven roast templates
 ├── components/
 │   ├── WalletHeader.tsx                      # Address, ENS, tags, sophistication
@@ -127,6 +136,8 @@ User → Next.js App Router
 │   ├── NetWorthChart.tsx                     # 30-day portfolio trend
 │   ├── RiskTable.tsx                         # Risk profile breakdown
 │   ├── AIInsightCard.tsx                     # Roast card + quota error state
+│   ├── TimeMachine.tsx                       # Best trade / worst trade / regret / survival
+│   ├── CompareView.tsx                       # Head-to-head wallet comparison UI
 │   ├── ProtocolChart.tsx                     # Protocol interaction breakdown
 │   ├── StablecoinPanel.tsx                   # Stablecoin allocation
 │   ├── ChainBreakdown.tsx                    # Multi-chain distribution
@@ -135,18 +146,15 @@ User → Next.js App Router
 │   ├── DeFiPositions.tsx                     # Aave/Uniswap positions
 │   ├── TransactionTimeline.tsx               # Recent transactions (chain-aware explorer links)
 │   └── DashboardSkeleton.tsx                 # Loading skeleton
-└── __tests__/                                # Jest test suite (287 tests)
+└── __tests__/                                # Jest test suite
 ```
 
 ---
 
-## AI Roast System
+## AI Features
 
-The roast system has two layers:
-
-**1. Live generation** — When `ANTHROPIC_API_KEY` is set, Claude Haiku generates a fresh roast from the wallet's actual data. Prompt enforces specific numbers ("your 73% stablecoin bag"), crypto slang, and a unique `behaviorType` nickname.
-
-**2. Mock library fallback** — `lib/ai/roastLibrary.ts` contains 104 hand-written roast templates across 8 archetypes. Selected by matching the wallet's dominant trait, then randomly picking within the archetype (so repeat analyses feel different):
+### Roast
+Claude Haiku generates a fresh personality roast from live wallet data. Prompt enforces specific numbers, crypto slang, and a unique `behaviorType` nickname. Falls back to 104 hand-written roast templates across 8 archetypes when API is unavailable.
 
 | Archetype | Trigger | Roasts |
 |-----------|---------|--------|
@@ -159,9 +167,11 @@ The roast system has two layers:
 | Whale | net worth > $1M | 8 |
 | General | everything else | 24 |
 
-To add roasts: append new `RoastFn` entries to the relevant array in `roastLibrary.ts`.
+### Wallet Time Machine
+AI narrates four chapters of the wallet's on-chain story using portfolio data: **best trade**, **worst trade**, **biggest regret**, and **survival instincts**. Falls back to data-driven templates when API is unavailable.
 
-To change the AI persona: edit `SYSTEM_PROMPT` in `narrator.ts`.
+### Compare Two Wallets
+Submit two addresses at `/compare` — the app fetches both profiles in parallel, generates individual roasts, then runs a head-to-head AI breakdown across risk tolerance, NFT taste, DeFi behavior, chain preferences, and a final verdict.
 
 ---
 
@@ -174,12 +184,12 @@ If the Anthropic API returns a 429 (quota exceeded), `AIInsightCard` shows a fri
 ## Deploying to Vercel
 
 ```bash
-npx vercel deploy
+npx vercel deploy --prod
 ```
 
 Add all env vars in the Vercel dashboard: Project → Settings → Environment Variables.
 
-`app/api/analyze/route.ts` sets `maxDuration = 60` to handle slow blockchain API responses on Vercel hobby.
+`app/api/analyze/route.ts` and `app/api/compare/route.ts` both set `maxDuration = 60` to handle slow blockchain API responses on Vercel hobby.
 
 ---
 
@@ -205,7 +215,7 @@ At 1,000 analyses/month with 24h caching (real-world unique requests ~300/month)
 ## Running Tests
 
 ```bash
-npm test              # all 287 tests
+npm test              # all tests
 npm test -- --watch   # watch mode
 npm test -- --coverage
 ```
