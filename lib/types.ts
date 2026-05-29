@@ -196,14 +196,43 @@ export interface WalletProfile {
   analyzedAt: number; // unix ms
 }
 
-// ─── Wallet Comparison ────────────────────────────────────────────────────────
+// ─── Smart Wallet / ERC-4337 ─────────────────────────────────────────────────
 
-export interface WalletComparisonAnalysis {
-  riskTolerance: string;
-  nftTaste: string;
-  defiBehavior: string;
-  chainPreferences: string;
-  verdict: string;
+export interface UserOperation {
+  userOpHash: string;
+  transactionHash: string;
+  blockNumber: number;
+  paymaster: string;      // "0x0000…" = self-paid
+  paymasterName: string;  // human-readable label
+  sponsored: boolean;     // true if paymaster != zero address
+  factory: string;        // wallet factory (from initCode), empty if already deployed
+  factoryName: string;
+}
+
+export interface PaymasterBreakdown {
+  name: string;
+  address: string;
+  opsCount: number;
+  percentage: number;
+}
+
+export interface SmartWalletProfile {
+  address: string;
+  isSmartWallet: boolean;
+  isERC4337: boolean;
+  totalUserOps: number;
+  sponsoredOps: number;
+  selfPaidOps: number;
+  factory: string;
+  factoryName: string;
+  paymasters: PaymasterBreakdown[];
+  recentOps: UserOperation[];
+  narrative: string;
+}
+
+export interface SmartWalletResponse {
+  data: SmartWalletProfile;
+  analysisMs: number;
 }
 
 // ─── API Response ─────────────────────────────────────────────────────────────
