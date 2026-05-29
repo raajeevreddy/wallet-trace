@@ -13,9 +13,9 @@ AI-powered crypto wallet analyzer that roasts your on-chain behavior. Paste any 
 - **Risk scoring** — concentration, leverage, bridge exposure, smart contract risk
 - **AI roast** — Claude Haiku generates a savage-but-accurate wallet personality profile
 - **104 mock roasts** — data-driven fallback library across 8 archetypes when API is unavailable
+- **🤖 Smart Wallet Explorer** — ERC-4337 detection, paymaster decoding, gas sponsorship breakdown, factory ID
 - **Share / Tweet** — one-click sharing with per-wallet OG images
 - **24h cache** — in-memory cache with 500-entry FIFO to minimize API costs
-- **Recent searches** — persisted in localStorage
 
 ---
 
@@ -89,6 +89,10 @@ User → Next.js App Router
        → Claude Haiku API    (roast narrative) or roastLibrary fallback
      → Dashboard UI
      → /analysis/[address]/opengraph-image (edge, per-wallet OG)
+     → POST /api/smart-wallet
+       → Alchemy Base RPC  (eth_getCode + alchemy_getUserOperationsByAccount)
+       → Claude Haiku API  (smart wallet narrative)
+     → /smart-wallet/[address] UI
 ```
 
 ---
@@ -103,8 +107,12 @@ User → Next.js App Router
 │   │   └── [address]/
 │   │       ├── page.tsx                      # Wallet dashboard
 │   │       └── opengraph-image.tsx           # Per-wallet OG image (edge)
+│   ├── smart-wallet/
+│   │   ├── page.tsx                          # Smart Wallet Explorer entry
+│   │   └── [address]/page.tsx               # Smart Wallet results
 │   └── api/
 │       ├── analyze/route.ts                  # Main analysis endpoint
+│       ├── smart-wallet/route.ts             # ERC-4337 smart wallet analysis
 │       └── ens/route.ts                      # ENS → address resolution
 ├── lib/
 │   ├── types.ts                              # All TypeScript interfaces
@@ -116,12 +124,15 @@ User → Next.js App Router
 │   │   ├── alchemy.ts                        # ETH tokens, NFTs, transactions
 │   │   ├── helius.ts                         # Solana tokens, NFTs, transactions
 │   │   ├── thegraph.ts                       # Aave V3 + Uniswap V3 positions
-│   │   ├── coingecko.ts                      # Prices + price history
+│   │   ├── coingecko.ts                      # Prices + price history (DeFiLlama fallback)
+│   │   ├── erc4337.ts                        # ERC-4337 UserOp + paymaster decoding on Base
 │   │   └── etherscan.ts                      # Wallet age
 │   └── ai/
-│       ├── narrator.ts                       # Claude API + fallback routing
+│       ├── narrator.ts                       # Claude API roast + fallback routing
+│       ├── smartWalletNarrator.ts            # Claude API smart wallet narrative
 │       └── roastLibrary.ts                   # 104 data-driven roast templates
 ├── components/
+│   ├── SmartWalletView.tsx                   # ERC-4337 explorer UI
 │   ├── WalletHeader.tsx                      # Address, ENS, tags, sophistication
 │   ├── MetricGrid.tsx                        # Net worth, age, tx count, protocols
 │   ├── NetWorthChart.tsx                     # 30-day portfolio trend

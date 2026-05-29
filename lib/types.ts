@@ -177,6 +177,45 @@ export interface WalletProfile {
   analyzedAt: number; // unix ms
 }
 
+// ─── Smart Wallet / ERC-4337 ─────────────────────────────────────────────────
+
+export interface UserOperation {
+  userOpHash: string;
+  transactionHash: string;
+  blockNumber: number;
+  paymaster: string;      // "0x0000…" = self-paid
+  paymasterName: string;  // human-readable label
+  sponsored: boolean;     // true if paymaster != zero address
+  factory: string;        // wallet factory (from initCode), empty if already deployed
+  factoryName: string;
+}
+
+export interface PaymasterBreakdown {
+  name: string;
+  address: string;
+  opsCount: number;
+  percentage: number;
+}
+
+export interface SmartWalletProfile {
+  address: string;
+  isSmartWallet: boolean;     // has on-chain bytecode
+  isERC4337: boolean;         // has UserOps via EntryPoint
+  totalUserOps: number;
+  sponsoredOps: number;       // ops where paymaster != zero
+  selfPaidOps: number;
+  factory: string;            // deploying factory address
+  factoryName: string;        // human-readable
+  paymasters: PaymasterBreakdown[];
+  recentOps: UserOperation[];
+  narrative: string;          // AI-generated summary
+}
+
+export interface SmartWalletResponse {
+  data: SmartWalletProfile;
+  analysisMs: number;
+}
+
 // ─── API Response ─────────────────────────────────────────────────────────────
 
 export interface AnalysisResponse {
