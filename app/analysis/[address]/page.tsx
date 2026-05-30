@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import type { AnalysisResponse, SmartWalletResponse, CompareResponse } from "@/lib/types";
 import { saveRecentWallet } from "@/lib/recentWallets";
 import WalletHeader from "@/components/WalletHeader";
@@ -151,8 +151,8 @@ function TabBar({ active, onChange, isSolana }: { active: Tab; onChange: (t: Tab
 
 // ─── Inline Compare ───────────────────────────────────────────────────────────
 
-function InlineCompare({ address }: { address: string }) {
-  const [addr2, setAddr2] = useState("");
+function InlineCompare({ address, prefillAddr2 }: { address: string; prefillAddr2?: string }) {
+  const [addr2, setAddr2] = useState(prefillAddr2 ?? "");
   const [compareData, setCompareData] = useState<CompareResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -211,6 +211,7 @@ function InlineCompare({ address }: { address: string }) {
 export default function AnalysisPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const rawParam = params.address as string;
 
   const [address, setAddress] = useState<string | null>(null);
@@ -218,7 +219,13 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("Analyzing…");
-  const [activeTab, setActiveTab] = useState<Tab>("portfolio");
+  const [activeTab, setActiveTab] = useState<Tab>(() => {
+    if (typeof window !== "undefined") {
+      const t = new URLSearchParams(window.location.search).get("tab");
+      if (t === "smart-wallet" || t === "compare") return t as Tab;
+    }
+    return "portfolio";
+  });
 
   // Smart Wallet tab — lazy loaded
   const [swData, setSwData] = useState<SmartWalletResponse | null>(null);
@@ -356,7 +363,7 @@ export default function AnalysisPage() {
 
               {/* ── Compare tab ── */}
               {activeTab === "compare" && address && (
-                <InlineCompare address={address} />
+                <InlineCompare address={address} prefillAddr2={searchParams?.get("compare") ?? undefined} />
               )}
             </div>
           </>
