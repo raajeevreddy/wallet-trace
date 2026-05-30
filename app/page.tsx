@@ -137,9 +137,9 @@ export default function HomePage() {
           maxWidth: 480, lineHeight: 1.65, margin: "0 auto",
           fontWeight: 300,
         }}>
-          Paste any Ethereum or Solana address and instantly see{" "}
-          <span style={{ color: "var(--green)", fontWeight: 400 }}>token balances, DeFi positions, risk score, and an AI-written summary</span>{" "}
-          of the wallet.
+          Paste any Ethereum or Solana address — get{" "}
+          <span style={{ color: "var(--green)", fontWeight: 400 }}>an AI roast, time machine, smart wallet detection, and head-to-head comparisons</span>{" "}
+          all in one dashboard.
         </p>
 
         {/* Feature pills */}
@@ -147,7 +147,7 @@ export default function HomePage() {
           display: "flex", flexWrap: "wrap", gap: 8,
           marginTop: 20, justifyContent: "center",
         }}>
-          {["ENS support", "Protocol analysis", "Risk scoring", "AI narrative", "Multi-chain"].map((f) => (
+          {["🔥 AI Roast", "⏳ Time Machine", "🤖 Smart Wallet", "⚔️ Compare", "Multi-chain"].map((f) => (
             <span key={f} style={{
               fontSize: 11, padding: "3px 11px",
               background: "rgba(6,194,217,0.08)",
