@@ -71,9 +71,10 @@ export default function HomePage() {
 
       } else {
         const trimmed = addr1.trim();
-        if (!trimmed) { setError("Enter an Ethereum address"); return; }
-        if (!isEthAddress(trimmed)) { setError("Smart Wallet requires an Ethereum address (0x…)"); return; }
-        router.push(`/analysis/${trimmed.toLowerCase()}?tab=smart-wallet`);
+        if (!trimmed) { setError("Enter an Ethereum address or ENS name"); return; }
+        if (looksLikeSolana(trimmed)) { setError("Smart Wallet is ETH/Base only — Solana wallets don't use ERC-4337"); return; }
+        const path = await resolveToPath(trimmed);
+        if (path) router.push(`/analysis/${path}?tab=smart-wallet`);
       }
     } finally {
       setLoading(false);
@@ -146,7 +147,7 @@ export default function HomePage() {
           {(mode === "analyze" || mode === "smart-wallet") && (
             <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
               <input type="text" value={addr1} onChange={(e) => { setAddr1(e.target.value); reset(); }}
-                placeholder={mode === "smart-wallet" ? "0x… (Ethereum address)" : "0x…, vitalik.eth, or Solana address"}
+                placeholder={mode === "smart-wallet" ? "0x… or ENS name (Ethereum only)" : "0x…, vitalik.eth, or Solana address"}
                 spellCheck={false}
                 style={{ flex: 1, fontFamily: "var(--font-mono)", fontSize: 13, padding: "11px 16px", border: `0.5px solid ${error ? "var(--red)" : `${accent}40`}`, borderRadius: 10, background: "rgba(3,15,28,0.6)", color: "var(--text)", outline: "none", transition: "border-color 0.2s" }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = accent; }}
