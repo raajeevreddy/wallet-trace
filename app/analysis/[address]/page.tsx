@@ -226,13 +226,12 @@ export default function AnalysisPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusMsg, setStatusMsg] = useState("Analyzing…");
-  const [activeTab, setActiveTab] = useState<Tab>(() => {
-    if (typeof window !== "undefined") {
-      const t = new URLSearchParams(window.location.search).get("tab");
-      if (t === "smart-wallet" || t === "compare") return t as Tab;
-    }
+  const initialTab = (() => {
+    const t = searchParams?.get("tab");
+    if (t === "smart-wallet" || t === "compare") return t as Tab;
     return "portfolio";
-  });
+  })();
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   // Smart Wallet tab — lazy loaded
   const [swData, setSwData] = useState<SmartWalletResponse | null>(null);

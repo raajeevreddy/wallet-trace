@@ -26,52 +26,14 @@ export default function SmartWalletView({ data }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-      {/* ── Verdict banner ──────────────────────────────────────────────────── */}
+      {/* ── AI narrative ────────────────────────────────────────────────────── */}
       <div style={{
         background: "var(--surface)",
-        border: `0.5px solid ${accent}40`,
-        borderRadius: 14, padding: "24px 28px",
-        boxShadow: `0 0 0 1px ${accent}08, 0 4px 24px ${accent}08`,
+        border: "0.5px solid var(--border)",
+        borderRadius: 14, padding: "22px 26px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
-            background: `${accent}18`,
-            border: `1.5px solid ${accent}40`,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20,
-          }}>
-            {isERC4337 ? "🤖" : "👤"}
-          </div>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text)", letterSpacing: "-0.01em" }}>
-              {isERC4337
-                ? (factoryName || "ERC-4337 Smart Wallet")
-                : isSmartWallet
-                ? "Smart Contract Wallet (non-4337)"
-                : "Standard EOA"}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--text-3)", fontFamily: "var(--font-mono)", marginTop: 2 }}>
-              {shortAddr(address)}
-              {factory ? ` · deployed by ${shortAddr(factory)}` : ""}
-            </div>
-          </div>
-          <div style={{
-            marginLeft: "auto",
-            padding: "5px 14px",
-            background: `${accent}15`,
-            border: `0.5px solid ${accent}35`,
-            borderRadius: 20,
-            fontSize: 11, fontWeight: 700, color: accent,
-            textTransform: "uppercase", letterSpacing: "0.08em",
-          }}>
-            {isERC4337 ? "ERC-4337" : isSmartWallet ? "Smart Contract" : "EOA"}
-          </div>
-        </div>
-
-        {/* AI narrative */}
         <p style={{
-          fontSize: 14, lineHeight: 1.7, color: "var(--text-2)", margin: 0,
+          fontSize: 14, lineHeight: 1.75, color: "var(--text-2)", margin: 0,
           borderLeft: `2px solid ${accent}`, paddingLeft: 14,
         }}>
           {narrative}
