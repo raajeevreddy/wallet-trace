@@ -60,14 +60,14 @@ export default function HomePage() {
         if (path) router.push(`/analysis/${path}`);
 
       } else if (mode === "compare") {
-        const a = addr1.trim().toLowerCase();
-        const b = addr2.trim().toLowerCase();
-        if (!a) { setError("Enter Wallet A"); return; }
-        if (!b) { setError("Enter Wallet B"); return; }
-        if (a === b) { setError("Enter two different wallets"); return; }
-        const enc1 = encodeURIComponent(a);
-        const enc2 = encodeURIComponent(b);
-        router.push(`/analysis/${enc1}?compare=${enc2}`);
+        if (!addr1.trim()) { setError("Enter Wallet A"); return; }
+        if (!addr2.trim()) { setError("Enter Wallet B"); return; }
+        const path1 = await resolveToPath(addr1);
+        if (!path1) return;
+        const path2 = await resolveToPath(addr2);
+        if (!path2) return;
+        if (path1 === path2) { setError("Enter two different wallets"); return; }
+        router.push(`/analysis/${path1}?tab=compare&compare=${path2}`);
 
       } else {
         const trimmed = addr1.trim();

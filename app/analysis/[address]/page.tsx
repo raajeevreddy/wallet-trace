@@ -159,14 +159,21 @@ function InlineCompare({ address, prefillAddr2 }: { address: string; prefillAddr
 
   async function handleCompare(e: React.FormEvent) {
     e.preventDefault();
-    const b = addr2.trim().toLowerCase();
-    if (!b) { setError("Enter a second wallet address"); return; }
-    if (b === address.toLowerCase()) { setError("Enter a different wallet"); return; }
+    const raw = addr2.trim();
+    if (!raw) { setError("Enter a second wallet address"); return; }
     setError(""); setLoading(true); setCompareData(null);
     try {
+      let resolvedB = raw.toLowerCase();
+      if (raw.includes(".") && !raw.startsWith("0x")) {
+        const res = await fetch(`/api/ens?name=${encodeURIComponent(raw.toLowerCase())}`);
+        const json = await res.json();
+        if (!json.address) { setError(json.error ?? `Could not resolve "${raw}"`); return; }
+        resolvedB = json.address.toLowerCase();
+      }
+      if (resolvedB === address.toLowerCase()) { setError("Enter a different wallet"); return; }
       const res = await fetch("/api/compare", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address1: address, address2: b }),
+        body: JSON.stringify({ address1: address, address2: resolvedB }),
       });
       const json = await res.json();
       if (json.error) setError(json.error);
