@@ -59,7 +59,13 @@
       "Bash(sed -n '128,148p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/TokenHoldings.tsx)",
       "Bash(sed -n '164,182p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/TransactionTimeline.tsx)",
       "Bash(sed -n '120,145p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/NftHoldings.tsx)",
-      "Bash(sed -n '44,65p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/NetWorthChart.tsx)"
+      "Bash(sed -n '44,65p' /Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/components/NetWorthChart.tsx)",
+      "Bash(grep -v \"vercel.app$\")",
+      "Bash(curl -s \"https://coins.llama.fi/prices/current/coingecko:ethereum,coingecko:solana,ethereum:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48\")",
+      "Bash(git pull *)",
+      "Bash(git checkout *)",
+      "Bash(mkdir -p \"/Users/rajeevvishaka/Documents/Claude/Projects/WalletTrace/app/compare/[addr1]/[addr2]\")",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

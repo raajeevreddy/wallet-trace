@@ -14,6 +14,12 @@ const MOCK_RESPONSE = {
     keyInsights: [],
     riskFlags: [],
   },
+  timeMachine: {
+    bestTrade: "Test best trade",
+    worstTrade: "Test worst trade",
+    biggestRegret: "Test regret",
+    survivalInstincts: "Test survival",
+  },
   cached: false,
   analysisMs: 1200,
 };

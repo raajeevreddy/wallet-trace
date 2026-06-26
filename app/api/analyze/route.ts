@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildWalletProfile, isValidAddress } from "@/lib/orchestrator";
 import { generateNarrative } from "@/lib/ai/narrator";
+import { generateTimeMachine } from "@/lib/ai/timeMachine";
 import { getCachedAnalysis, setCachedAnalysis } from "@/lib/cache";
 import { isRateLimited, getRemainingRequests, purgeExpired } from "@/lib/rateLimit";
 import type { AnalysisResponse, AnalysisError } from "@/lib/types";
@@ -112,11 +113,15 @@ export async function POST(req: NextRequest) {
   // ─── Full analysis ────────────────────────────────────────────────────────
   try {
     const profile = await buildWalletProfile(address);
-    const narrative = await generateNarrative(profile);
+    const [narrative, timeMachine] = await Promise.all([
+      generateNarrative(profile),
+      generateTimeMachine(profile),
+    ]);
 
     const response: AnalysisResponse = {
       profile,
       narrative,
+      timeMachine,
       cached: false,
       analysisMs: Date.now() - start,
     };
