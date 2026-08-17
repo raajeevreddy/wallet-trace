@@ -8,6 +8,7 @@ import {
   shortAddress,
   type RecentWallet,
 } from "@/lib/recentWallets";
+import NumerologyIntakeForm from "@/components/NumerologyIntakeForm";
 
 const EXAMPLE_WALLETS = [
   { label: "Vitalik.eth", address: "vitalik.eth" },
@@ -260,6 +261,34 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* ── Numerology Profile Section ────────────────────────────────────────── */}
+      <div style={{
+        width: "100%", maxWidth: 580,
+        background: "linear-gradient(135deg, rgba(12,31,52,0.97) 0%, rgba(7,22,39,0.95) 100%)",
+        border: "0.5px solid rgba(6,194,217,0.18)",
+        borderRadius: 20,
+        padding: "32px 32px 28px",
+        marginTop: 40,
+        boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+      }}>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{
+            display: "block", fontSize: 11, fontWeight: 500,
+            color: "var(--text-3)", textTransform: "uppercase",
+            letterSpacing: "0.10em", marginBottom: 4,
+          }}>
+            ✨ Numerology Profile
+          </label>
+          <p style={{
+            fontSize: 12, color: "var(--text-2)", margin: "0",
+            lineHeight: 1.5,
+          }}>
+            Discover your numerological reading with your full name, date of birth, and alternate names or spellings.
+          </p>
+        </div>
+        <NumerologyIntakeForm accent="#06C2D9" />
       </div>
 
       {/* ── Footer caption ────────────────────────────────────────────────────── */}
